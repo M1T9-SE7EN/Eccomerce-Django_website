@@ -1,16 +1,15 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
-from django.contrib.auth.decorators import login_required
-from .forms import UserUpdateForm, ProfileUpdateForm, UserRegisterForm
+from django.contrib.auth.decorators import login_required, user_passes_test
+from .forms import UserUpdateForm, ProfileUpdateForm, UserRegisterForm, AdminUserCreateForm, AdminUserUpdateForm
 from .models import Profile
 from django.contrib.auth import logout
 from django.views.decorators.http import require_http_methods
-# Admin user management views
-from django.contrib.admin.views.decorators import staff_member_required
-from django.shortcuts import get_object_or_404
-from .forms import AdminUserCreateForm, AdminUserUpdateForm
 from django.contrib.auth.models import User
 from django.urls import reverse
+
+
+staff_member_required = user_passes_test(lambda u: u.is_staff)
 
 
 def register(request):
@@ -23,7 +22,7 @@ def register(request):
             return redirect('login')
     else:
         form = UserRegisterForm()
-    return render(request, 'users/register.html', {'form': form})
+    return render(request, 'register.html', {'form': form})
 
 
 @login_required
@@ -50,7 +49,7 @@ def profile(request):
         'p_form': p_form,
     }
 
-    return render(request, 'users/profile.html', context)
+    return render(request, 'profile.html', context)
 
 
 
@@ -69,7 +68,7 @@ def logout_view(request):
 @staff_member_required
 def user_list(request):
     users = User.objects.all().order_by('id')
-    return render(request, 'users/user_list.html', {'users': users})
+    return render(request, 'user_list.html', {'users': users})
 
 
 @staff_member_required
@@ -84,7 +83,7 @@ def user_create(request):
     else:
         form = AdminUserCreateForm()
 
-    return render(request, 'users/user_form.html', {
+    return render(request, 'user_form.html', {
         'form': form
     })
 
@@ -101,7 +100,7 @@ def user_update(request, pk):
     else:
         form = AdminUserUpdateForm(instance=user)
 
-    return render(request, 'users/user_form.html', {
+    return render(request, 'user_form.html', {
         'form': form
     })
 
@@ -114,4 +113,4 @@ def user_delete(request, pk):
         messages.success(request, "User deleted successfully")
         return redirect(reverse('admin_dashboard') + '#users')
 
-    return render(request, 'users/user_confirm_delete.html', {'user': user})
+    return render(request, 'user_confirm_delete.html', {'user': user})

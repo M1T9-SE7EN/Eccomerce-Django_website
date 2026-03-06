@@ -1,0 +1,181 @@
+{% extends "shop/base.html" %} 
+{% load crispy_forms_tags %}
+{% block content %}
+
+<style>
+  /* ========================= */
+  /* Global Onyx Background */
+  /* ========================= */
+  body {
+    background: linear-gradient(135deg, #000000 0%, #1a1a1a 100%);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* White Liquid Mist Effect - Matches Register Page */
+  body::before {
+    content: "";
+    position: fixed;
+    width: 800px;
+    height: 800px;
+    background: radial-gradient(
+      circle,
+      rgba(255, 255, 255, 0.08),
+      transparent 70%
+    );
+    top: -250px;
+    left: -200px;
+    animation: floatMist 15s ease-in-out infinite alternate;
+    z-index: 0;
+  }
+
+  @keyframes floatMist {
+    from {
+      transform: translate(0, 0) rotate(0deg);
+    }
+    to {
+      transform: translate(150px, 100px) rotate(30deg);
+    }
+  }
+
+  /* ========================= */
+  /* Center Wrapper */
+  /* ========================= */
+  .login-wrapper {
+    min-height: 90vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* ========================= */
+  /* Pure Liquid Glass Card */
+  /* ========================= */
+  .glass-card {
+    backdrop-filter: blur(30px) saturate(150%);
+    -webkit-backdrop-filter: blur(30px) saturate(150%);
+    background: rgba(255, 255, 255, 0.85);
+    border-radius: 30px;
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.6);
+    padding: 50px 45px;
+    width: 100%;
+    max-width: 480px;
+
+    opacity: 0;
+    transform: scale(0.95);
+    animation: scaleIn 0.8s cubic-bezier(0.165, 0.84, 0.44, 1) forwards;
+  }
+
+  @keyframes scaleIn {
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+  /* ========================= */
+  /* Titles (Black Contrast) */
+  /* ========================= */
+  .glass-card legend {
+    font-weight: 900;
+    font-size: 2.2rem;
+    color: #000000;
+    text-align: center;
+    letter-spacing: -1px;
+    margin-bottom: 30px;
+    float: none; /* Overriding default Bootstrap legend float */
+    width: 100%;
+  }
+
+  /* ========================= */
+  /* Form Styling */
+  /* ========================= */
+  .glass-card label {
+    color: #000000 !important;
+    font-weight: 700;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    letter-spacing: 1px;
+  }
+
+  .glass-card .form-control {
+    background: rgba(0, 0, 0, 0.05) !important;
+    border: 2px solid transparent !important;
+    color: #000000 !important;
+    border-radius: 12px !important;
+    padding: 14px !important;
+    transition: all 0.3s ease !important;
+  }
+
+  .glass-card .form-control:focus {
+    background: #ffffff !important;
+    border-color: #000000 !important;
+    box-shadow: 0 0 0 4px rgba(0, 0, 0, 0.05) !important;
+  }
+
+  /* ========================= */
+  /* Liquid Black Button */
+  /* ========================= */
+  .btn-black {
+    background: #000000;
+    border: 2px solid #000000;
+    border-radius: 12px;
+    padding: 15px;
+    color: #ffffff;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    width: 100%;
+    transition: all 0.3s ease;
+  }
+
+  .btn-black:hover {
+    background: transparent;
+    color: #000000;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+  }
+
+  /* ========================= */
+  /* Footer */
+  /* ========================= */
+  .login-footer {
+    text-align: center;
+    margin-top: 25px;
+    color: #444444;
+  }
+
+  .login-footer a {
+    color: #000000;
+    font-weight: 800;
+    text-decoration: underline;
+    text-underline-offset: 4px;
+  }
+</style>
+
+<div class="login-wrapper">
+  <div class="glass-card">
+    <form method="POST">
+      {% csrf_token %}
+      <fieldset class="form-group">
+        <legend>Login</legend>
+        {{ form|crispy }}
+      </fieldset>
+
+      <div class="mt-4">
+        <button type="submit" class="btn btn-black">Authenticate</button>
+      </div>
+    </form>
+
+    <div class="login-footer">
+      <small>
+        New here?
+        <a href="{% url 'register' %}">Create Account</a>
+      </small>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

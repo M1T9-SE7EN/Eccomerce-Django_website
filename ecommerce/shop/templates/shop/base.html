@@ -1,0 +1,649 @@
+<!doctype html>
+<html lang="en">
+  {% load static %} {% load cart_tags %}
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{% block title %}Guramaile Shop{% endblock %}</title>
+
+    <!-- Bootstrap 5 -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <!-- Bootstrap Icons -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css"
+      rel="stylesheet"
+    />
+    <!-- Fonts -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500;600&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      :root {
+        --cream: #f5f0e8;
+        --cream-dark: #ede7d9;
+        --cream-deeper: #e0d8c8;
+        --black: #0a0a0a;
+        --black-soft: #1c1c1c;
+        --charcoal: #2e2e2e;
+        --gold: #c9a96e;
+        --gold-light: #e8d5b0;
+        --text-muted: #8a8070;
+      }
+
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+      }
+
+      html {
+        scroll-behavior: smooth;
+      }
+
+      body {
+        background-color: var(--cream);
+        color: var(--black);
+        font-family: "DM Sans", sans-serif;
+        min-height: 100vh;
+      }
+
+      /* Grain texture overlay */
+      body::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+        pointer-events: none;
+        z-index: 9999;
+        opacity: 0.4;
+      }
+
+      /* ========================= */
+      /* Navbar */
+      /* ========================= */
+      .site-nav {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 999;
+        padding: 0;
+        transition:
+          background 0.3s ease,
+          box-shadow 0.3s ease;
+      }
+
+      .site-nav .nav-inner {
+        background: var(--black);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+        transition:
+          background 0.3s ease,
+          box-shadow 0.3s ease,
+          border-color 0.3s ease;
+      }
+
+      .site-nav.scrolled .nav-inner {
+        background: rgba(10, 10, 10, 0.97);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+        border-color: rgba(201, 169, 110, 0.15);
+      }
+
+      .nav-inner-container {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        height: 68px;
+        padding: 0 24px;
+        max-width: 1320px;
+        margin: 0 auto;
+      }
+
+      /* Brand */
+      .nav-brand {
+        font-family: "Playfair Display", serif;
+        font-size: 1.15rem;
+        font-weight: 900;
+        color: var(--cream);
+        text-decoration: none;
+        letter-spacing: -0.5px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        transition: color 0.2s ease;
+      }
+
+      .nav-brand:hover {
+        color: var(--gold);
+      }
+
+      .nav-brand-icon {
+        width: 32px;
+        height: 32px;
+        background: var(--gold);
+        border-radius: 3px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.85rem;
+        color: var(--black);
+        flex-shrink: 0;
+      }
+
+      .nav-brand-sub {
+        font-family: "DM Sans", sans-serif;
+        font-size: 0.5rem;
+        font-weight: 600;
+        letter-spacing: 3px;
+        text-transform: uppercase;
+        color: var(--gold);
+        display: block;
+        line-height: 1;
+      }
+
+      .nav-brand-name {
+        display: block;
+        line-height: 1.1;
+      }
+
+      /* Nav Links */
+      .nav-links {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        list-style: none;
+        margin: 0;
+        padding: 0;
+      }
+
+      .nav-link-item a,
+      .nav-link-item button.nav-link-btn {
+        font-size: 0.72rem;
+        font-weight: 600;
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
+        color: rgba(255, 255, 255, 0.5);
+        text-decoration: none;
+        padding: 8px 14px;
+        border-radius: 3px;
+        transition: all 0.2s ease;
+        background: transparent;
+        border: none;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 7px;
+      }
+
+      .nav-link-item a:hover,
+      .nav-link-item button.nav-link-btn:hover {
+        color: var(--cream);
+        background: rgba(255, 255, 255, 0.05);
+      }
+
+      .nav-link-item a.active {
+        color: var(--gold);
+      }
+
+      /* Cart badge */
+      .cart-badge {
+        background: var(--gold);
+        color: var(--black);
+        font-size: 0.55rem;
+        font-weight: 800;
+        padding: 2px 6px;
+        border-radius: 100px;
+        line-height: 1.4;
+      }
+
+      /* Admin link */
+      .nav-link-admin {
+        color: var(--gold) !important;
+      }
+      .nav-link-admin:hover {
+        background: rgba(201, 169, 110, 0.1) !important;
+      }
+
+      /* Divider pip */
+      .nav-pip {
+        width: 1px;
+        height: 18px;
+        background: rgba(255, 255, 255, 0.1);
+        margin: 0 6px;
+      }
+
+      /* Auth buttons */
+      .btn-nav-auth {
+        font-size: 0.68rem;
+        font-weight: 700;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        padding: 8px 20px;
+        border-radius: 3px;
+        text-decoration: none;
+        transition: all 0.25s ease;
+        display: inline-flex;
+        align-items: center;
+      }
+
+      .btn-nav-ghost {
+        color: rgba(255, 255, 255, 0.45);
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        background: transparent;
+      }
+
+      .btn-nav-ghost:hover {
+        color: var(--cream);
+        border-color: rgba(255, 255, 255, 0.3);
+      }
+
+      .btn-nav-solid {
+        background: var(--gold);
+        color: var(--black);
+        border: 1px solid var(--gold);
+      }
+
+      .btn-nav-solid:hover {
+        background: var(--gold-light);
+        border-color: var(--gold-light);
+        color: var(--black);
+        box-shadow: 0 4px 12px rgba(201, 169, 110, 0.3);
+      }
+
+      /* Mobile toggler */
+      .nav-toggler {
+        display: none;
+        background: none;
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        color: rgba(255, 255, 255, 0.6);
+        padding: 7px 10px;
+        border-radius: 3px;
+        cursor: pointer;
+        font-size: 1rem;
+        transition: all 0.2s ease;
+      }
+
+      .nav-toggler:hover {
+        border-color: var(--gold);
+        color: var(--gold);
+      }
+
+      @media (max-width: 991px) {
+        .nav-toggler {
+          display: flex;
+          align-items: center;
+        }
+
+        .nav-links {
+          display: none;
+          position: absolute;
+          top: 68px;
+          left: 0;
+          right: 0;
+          background: rgba(10, 10, 10, 0.98);
+          backdrop-filter: blur(20px);
+          border-top: 1px solid rgba(255, 255, 255, 0.06);
+          border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+          flex-direction: column;
+          align-items: stretch;
+          gap: 0;
+          padding: 12px 16px;
+        }
+
+        .nav-links.open {
+          display: flex;
+        }
+
+        .nav-pip {
+          display: none;
+        }
+
+        .nav-link-item a,
+        .nav-link-item button.nav-link-btn {
+          width: 100%;
+          padding: 12px 16px;
+          justify-content: flex-start;
+        }
+
+        .btn-nav-auth {
+          width: 100%;
+          justify-content: center;
+          margin: 4px 0;
+        }
+      }
+
+      /* ========================= */
+      /* Flash Messages */
+      /* ========================= */
+      .messages-wrap {
+        position: fixed;
+        top: 84px;
+        right: 24px;
+        z-index: 998;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        max-width: 360px;
+      }
+
+      .flash-msg {
+        background: var(--black);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-left: 3px solid var(--gold);
+        border-radius: 3px;
+        padding: 14px 18px;
+        font-size: 0.82rem;
+        color: rgba(255, 255, 255, 0.8);
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 12px;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+        animation: slideInRight 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      }
+
+      .flash-msg.success {
+        border-left-color: #6ecfa0;
+      }
+      .flash-msg.error {
+        border-left-color: #e07070;
+      }
+      .flash-msg.warning {
+        border-left-color: var(--gold);
+      }
+      .flash-msg.info {
+        border-left-color: #7aaeff;
+      }
+
+      @keyframes slideInRight {
+        from {
+          opacity: 0;
+          transform: translateX(20px);
+        }
+        to {
+          opacity: 1;
+          transform: translateX(0);
+        }
+      }
+
+      .flash-close {
+        background: none;
+        border: none;
+        color: rgba(255, 255, 255, 0.3);
+        cursor: pointer;
+        font-size: 0.9rem;
+        padding: 0;
+        line-height: 1;
+        flex-shrink: 0;
+        transition: color 0.15s ease;
+      }
+
+      .flash-close:hover {
+        color: rgba(255, 255, 255, 0.7);
+      }
+
+      /* ========================= */
+      /* Main Content */
+      /* ========================= */
+      .site-main {
+        padding-top: 68px; /* offset for fixed nav */
+      }
+
+      /* ========================= */
+      /* Footer */
+      /* ========================= */
+      .site-footer {
+        background: var(--black);
+        border-top: 1px solid rgba(255, 255, 255, 0.05);
+        padding: 48px 0 32px;
+        margin-top: auto;
+      }
+
+      .footer-brand {
+        font-family: "Playfair Display", serif;
+        font-size: 1.1rem;
+        font-weight: 900;
+        color: var(--cream);
+        letter-spacing: -0.5px;
+      }
+
+      .footer-brand span {
+        color: var(--gold);
+        font-style: italic;
+      }
+
+      .footer-tagline {
+        font-size: 0.72rem;
+        color: rgba(255, 255, 255, 0.25);
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        margin-top: 6px;
+      }
+
+      .footer-divider {
+        border: none;
+        border-top: 1px solid rgba(255, 255, 255, 0.06);
+        margin: 32px 0 24px;
+      }
+
+      .footer-bottom {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 12px;
+      }
+
+      .footer-copy {
+        font-size: 0.7rem;
+        color: rgba(255, 255, 255, 0.2);
+        letter-spacing: 1px;
+      }
+
+      .footer-links {
+        display: flex;
+        gap: 20px;
+        list-style: none;
+        margin: 0;
+        padding: 0;
+      }
+
+      .footer-links a {
+        font-size: 0.68rem;
+        font-weight: 600;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        color: rgba(255, 255, 255, 0.2);
+        text-decoration: none;
+        transition: color 0.2s ease;
+      }
+
+      .footer-links a:hover {
+        color: var(--gold);
+      }
+    </style>
+  </head>
+  <body>
+    <!-- ==================== NAVBAR ==================== -->
+    <nav class="site-nav" id="siteNav">
+      <div class="nav-inner">
+        <div class="nav-inner-container">
+          <!-- Brand -->
+          <a
+            class="nav-brand"
+            href="{% if user.is_authenticated and user.is_staff %}{% url 'admin_dashboard' %}{% else %}{% url 'product_list' %}{% endif %}"
+          >
+            <div class="nav-brand-icon">
+              <i class="bi bi-bag"></i>
+            </div>
+            <div>
+              <span class="nav-brand-sub">Est. 2024</span>
+              <span class="nav-brand-name">Guramaile</span>
+            </div>
+          </a>
+
+          <!-- Mobile toggler -->
+          <button
+            class="nav-toggler"
+            id="navToggler"
+            aria-label="Toggle navigation"
+          >
+            <i class="bi bi-list"></i>
+          </button>
+
+          <!-- Links -->
+          <ul class="nav-links" id="navLinks">
+            {% if user.is_authenticated %}
+
+            <li class="nav-link-item">
+              <a href="{% url 'product_list' %}">
+                <i class="bi bi-grid-3x3-gap"></i> Shop
+              </a>
+            </li>
+
+            <li class="nav-link-item">
+              <a href="{% url 'cart_detail' %}">
+                <i class="bi bi-bag"></i> Cart {% with count=cart_item_count %}
+                {% if count %}<span class="cart-badge">{{ count }}</span>{%
+                endif %} {% endwith %}
+              </a>
+            </li>
+
+            <li class="nav-link-item">
+              <a href="{% url 'order_list' %}">
+                <i class="bi bi-receipt"></i> Orders
+              </a>
+            </li>
+
+            <li class="nav-link-item">
+              <a href="{% url 'profile' %}">
+                <i class="bi bi-person"></i> Profile
+              </a>
+            </li>
+
+            {% if user.is_staff %}
+            <div class="nav-pip"></div>
+            <li class="nav-link-item">
+              <a href="{% url 'admin_dashboard' %}" class="nav-link-admin">
+                <i class="bi bi-shield-check"></i> Admin
+              </a>
+            </li>
+            {% endif %}
+
+            <div class="nav-pip"></div>
+
+            <li class="nav-link-item">
+              <form method="post" action="{% url 'logout' %}" style="margin: 0">
+                {% csrf_token %}
+                <button type="submit" class="nav-link-btn">
+                  <i class="bi bi-box-arrow-right"></i> Logout
+                </button>
+              </form>
+            </li>
+
+            {% else %}
+
+            <li class="nav-link-item">
+              <a href="{% url 'login' %}" class="btn-nav-auth btn-nav-ghost">
+                <i class="bi bi-person"></i>&nbsp; Login
+              </a>
+            </li>
+            <li class="nav-link-item">
+              <a href="{% url 'register' %}" class="btn-nav-auth btn-nav-solid">
+                Register
+              </a>
+            </li>
+
+            {% endif %}
+          </ul>
+        </div>
+      </div>
+    </nav>
+
+    <!-- ==================== FLASH MESSAGES ==================== -->
+    {% if messages %}
+    <div class="messages-wrap" id="messagesWrap">
+      {% for message in messages %}
+      <div class="flash-msg {{ message.tags }}" role="alert">
+        <span>{{ message }}</span>
+        <button
+          class="flash-close"
+          onclick="this.parentElement.remove()"
+          aria-label="Dismiss"
+        >
+          <i class="bi bi-x"></i>
+        </button>
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- ==================== MAIN CONTENT ==================== -->
+    <main class="site-main">{% block content %}{% endblock %}</main>
+
+    <!-- ==================== FOOTER ==================== -->
+    <footer class="site-footer">
+      <div class="container">
+        <div class="footer-brand">X — <span>Guramaile</span></div>
+        <p class="footer-tagline">Curated Collections</p>
+        <hr class="footer-divider" />
+        <div class="footer-bottom">
+          <span class="footer-copy"
+            >&copy; {% now "Y" %} Guramaile Shop. All rights reserved.</span
+          >
+          <ul class="footer-links">
+            <a href="{% url 'product_list' %}">Shop</a>
+            {% if user.is_authenticated %}
+            <a href="{% url 'cart_detail' %}">Cart</a>
+            <a href="{% url 'order_list' %}">Orders</a>
+            {% else %}
+            <a href="{% url 'login' %}">Login</a>
+            <a href="{% url 'register' %}">Register</a>
+            {% endif %}
+          </ul>
+        </div>
+      </div>
+    </footer>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+      // Navbar scroll effect
+      const siteNav = document.getElementById("siteNav");
+      window.addEventListener("scroll", () => {
+        siteNav.classList.toggle("scrolled", window.scrollY > 20);
+      });
+
+      // Mobile nav toggle
+      const navToggler = document.getElementById("navToggler");
+      const navLinks = document.getElementById("navLinks");
+      navToggler.addEventListener("click", () => {
+        navLinks.classList.toggle("open");
+        const isOpen = navLinks.classList.contains("open");
+        navToggler.innerHTML = isOpen
+          ? '<i class="bi bi-x"></i>'
+          : '<i class="bi bi-list"></i>';
+      });
+
+      // Auto-dismiss flash messages after 5s
+      setTimeout(() => {
+        const wrap = document.getElementById("messagesWrap");
+        if (wrap) {
+          wrap.querySelectorAll(".flash-msg").forEach((msg, i) => {
+            setTimeout(() => {
+              msg.style.transition = "opacity 0.4s ease, transform 0.4s ease";
+              msg.style.opacity = "0";
+              msg.style.transform = "translateX(20px)";
+              setTimeout(() => msg.remove(), 400);
+            }, i * 150);
+          });
+        }
+      }, 5000);
+    </script>
+  </body>
+</html>
