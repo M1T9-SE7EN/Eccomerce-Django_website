@@ -1,0 +1,493 @@
+{% extends "shop/base.html" %}
+
+{% block content %}
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+<style>
+    :root {
+        --cream: #F5F0E8;
+        --cream-dark: #EDE7D9;
+        --cream-deeper: #E0D8C8;
+        --black: #0A0A0A;
+        --black-soft: #1C1C1C;
+        --charcoal: #2E2E2E;
+        --gold: #C9A96E;
+        --gold-light: #E8D5B0;
+        --text-muted: #8A8070;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+        background-color: var(--cream);
+        color: var(--black);
+        font-family: 'DM Sans', sans-serif;
+        min-height: 100vh;
+    }
+
+    body::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+        pointer-events: none;
+        z-index: 1000;
+        opacity: 0.4;
+    }
+
+    /* ========================= */
+    /* Page Header */
+    /* ========================= */
+    .page-header {
+        background: var(--black);
+        padding: 80px 0 60px;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .page-header::before {
+        content: "ORDERS";
+        position: absolute;
+        font-family: 'Playfair Display', serif;
+        font-size: clamp(80px, 15vw, 200px);
+        font-weight: 900;
+        color: rgba(255,255,255,0.03);
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        white-space: nowrap;
+        letter-spacing: -5px;
+        pointer-events: none;
+    }
+
+    .page-header::after {
+        content: "";
+        position: absolute;
+        width: 600px;
+        height: 600px;
+        background: radial-gradient(circle, rgba(201,169,110,0.12) 0%, transparent 70%);
+        top: -200px;
+        right: -150px;
+        pointer-events: none;
+    }
+
+    .header-content { position: relative; z-index: 2; }
+
+    .header-label {
+        font-size: 0.65rem;
+        font-weight: 600;
+        letter-spacing: 4px;
+        text-transform: uppercase;
+        color: var(--gold);
+        display: block;
+        margin-bottom: 16px;
+    }
+
+    .header-title {
+        font-family: 'Playfair Display', serif;
+        font-size: clamp(38px, 5vw, 64px);
+        font-weight: 900;
+        color: var(--cream);
+        line-height: 1;
+        letter-spacing: -2px;
+    }
+
+    .header-title span {
+        color: var(--gold);
+        font-style: italic;
+    }
+
+    .header-divider {
+        width: 80px;
+        height: 2px;
+        background: linear-gradient(90deg, var(--gold), transparent);
+        margin: 24px 0;
+    }
+
+    .item-count-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: rgba(255,255,255,0.06);
+        border: 1px solid rgba(255,255,255,0.1);
+        color: rgba(255,255,255,0.5);
+        padding: 8px 18px;
+        border-radius: 100px;
+        font-size: 0.75rem;
+        font-weight: 500;
+        letter-spacing: 1px;
+    }
+
+    .item-count-badge span { color: var(--gold); font-weight: 700; }
+
+    /* ========================= */
+    /* Orders Section */
+    /* ========================= */
+    .orders-section {
+        padding: 60px 0 100px;
+        background: var(--cream);
+    }
+
+    .section-rule {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        margin-bottom: 40px;
+    }
+
+    .section-rule-label {
+        font-size: 0.65rem;
+        font-weight: 600;
+        letter-spacing: 4px;
+        text-transform: uppercase;
+        color: var(--text-muted);
+        white-space: nowrap;
+    }
+
+    .section-rule-line {
+        flex: 1;
+        height: 1px;
+        background: linear-gradient(90deg, var(--cream-deeper), transparent);
+    }
+
+    /* ========================= */
+    /* Order Card */
+    /* ========================= */
+    @keyframes riseUp {
+        from { opacity: 0; transform: translateY(30px); }
+        to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .order-card {
+        background: #fff;
+        border: 1px solid rgba(0,0,0,0.07);
+        border-radius: 4px;
+        overflow: hidden;
+        opacity: 0;
+        animation: riseUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        animation-delay: calc(var(--i) * 0.1s);
+        position: relative;
+    }
+
+    /* Top accent line — gold sweep on hover */
+    .order-card::before {
+        content: "";
+        position: absolute;
+        top: 0; left: 0;
+        width: 0;
+        height: 3px;
+        background: linear-gradient(90deg, var(--black), var(--gold));
+        transition: width 0.4s ease;
+        z-index: 2;
+    }
+
+    .order-card:hover::before { width: 100%; }
+
+    /* ===== Card Header ===== */
+    .order-card-head {
+        background: var(--black);
+        padding: 20px 28px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 12px;
+    }
+
+    .order-id {
+        font-family: 'Playfair Display', serif;
+        font-size: 1.15rem;
+        font-weight: 700;
+        color: var(--cream);
+        letter-spacing: -0.5px;
+    }
+
+    .order-id span {
+        color: var(--gold);
+        font-style: italic;
+    }
+
+    .order-meta {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        flex-wrap: wrap;
+    }
+
+    .order-date {
+        font-size: 0.72rem;
+        color: rgba(255,255,255,0.35);
+        font-weight: 400;
+        letter-spacing: 0.5px;
+    }
+
+    /* ===== Status Badge ===== */
+    .status-badge {
+        font-size: 0.6rem;
+        font-weight: 700;
+        letter-spacing: 2.5px;
+        text-transform: uppercase;
+        padding: 5px 12px;
+        border-radius: 100px;
+    }
+
+    .status-pending    { background: rgba(201,169,110,0.15); color: var(--gold); border: 1px solid rgba(201,169,110,0.3); }
+    .status-processing { background: rgba(100,150,255,0.12); color: #7aaeff; border: 1px solid rgba(100,150,255,0.25); }
+    .status-shipped    { background: rgba(100,200,150,0.12); color: #6ecfa0; border: 1px solid rgba(100,200,150,0.25); }
+    .status-delivered  { background: rgba(100,200,100,0.12); color: #72c472; border: 1px solid rgba(100,200,100,0.25); }
+    .status-cancelled  { background: rgba(220,80,80,0.12);  color: #e07070; border: 1px solid rgba(220,80,80,0.25); }
+    .status-default    { background: rgba(255,255,255,0.07); color: rgba(255,255,255,0.45); border: 1px solid rgba(255,255,255,0.1); }
+
+    /* ===== Card Body ===== */
+    .order-card-body {
+        padding: 0;
+    }
+
+    .order-items-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .order-items-table thead th {
+        font-size: 0.6rem;
+        font-weight: 600;
+        letter-spacing: 3px;
+        text-transform: uppercase;
+        color: var(--text-muted);
+        padding: 14px 28px;
+        border-bottom: 1px solid var(--cream-deeper);
+        background: var(--cream);
+        text-align: left;
+    }
+
+    .order-items-table tbody tr {
+        border-bottom: 1px solid var(--cream-deeper);
+        transition: background 0.15s ease;
+    }
+
+    .order-items-table tbody tr:last-child {
+        border-bottom: none;
+    }
+
+    .order-items-table tbody tr:hover {
+        background: #faf9f6;
+    }
+
+    .order-items-table td {
+        padding: 14px 28px;
+        font-size: 0.88rem;
+        color: var(--charcoal);
+        vertical-align: middle;
+        border: none;
+    }
+
+    .item-name-cell {
+        font-weight: 600;
+        color: var(--black) !important;
+    }
+
+    .item-qty-cell {
+        color: var(--text-muted) !important;
+        font-size: 0.82rem !important;
+    }
+
+    .item-subtotal-cell {
+        font-family: 'Playfair Display', serif;
+        font-weight: 700;
+        color: var(--black) !important;
+        text-align: right;
+    }
+
+    /* ===== Card Footer (Total) ===== */
+    .order-card-foot {
+        padding: 18px 28px;
+        background: var(--black);
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 16px;
+    }
+
+    .order-total-label {
+        font-size: 0.62rem;
+        font-weight: 600;
+        letter-spacing: 3px;
+        text-transform: uppercase;
+        color: rgba(255,255,255,0.3);
+    }
+
+    .order-total-value {
+        font-family: 'Playfair Display', serif;
+        font-size: 1.4rem;
+        font-weight: 900;
+        color: var(--cream);
+        letter-spacing: -0.5px;
+    }
+
+    .order-total-value::before {
+        content: "$";
+        font-size: 0.85rem;
+        vertical-align: super;
+        font-family: 'DM Sans', sans-serif;
+        font-weight: 500;
+        opacity: 0.5;
+    }
+
+    /* ========================= */
+    /* Empty State */
+    /* ========================= */
+    .empty-state {
+        text-align: center;
+        padding: 80px 20px;
+        background: #fff;
+        border: 1px solid rgba(0,0,0,0.07);
+        border-radius: 4px;
+    }
+
+    .empty-icon {
+        width: 80px;
+        height: 80px;
+        border: 2px solid var(--cream-deeper);
+        border-radius: 50%;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 24px;
+        color: var(--text-muted);
+        font-size: 28px;
+    }
+
+    .empty-title {
+        font-family: 'Playfair Display', serif;
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: var(--charcoal);
+        margin-bottom: 10px;
+    }
+
+    .empty-sub {
+        color: var(--text-muted);
+        font-size: 0.9rem;
+        margin-bottom: 28px;
+    }
+
+    .btn-shop-now {
+        display: inline-block;
+        background: var(--black);
+        color: var(--cream);
+        border: 2px solid var(--black);
+        padding: 13px 32px;
+        border-radius: 3px;
+        font-size: 0.7rem;
+        font-weight: 700;
+        letter-spacing: 3px;
+        text-transform: uppercase;
+        text-decoration: none;
+        transition: all 0.25s ease;
+    }
+
+    .btn-shop-now:hover {
+        background: var(--gold);
+        border-color: var(--gold);
+        color: var(--black);
+    }
+</style>
+
+<!-- ==================== PAGE HEADER ==================== -->
+<div class="page-header">
+    <div class="container">
+        <div class="header-content">
+            <span class="header-label">Account</span>
+            <h1 class="header-title">My <span>Orders</span></h1>
+            <div class="header-divider"></div>
+            {% if orders %}
+            <div class="item-count-badge">
+                <span>{{ orders|length }}</span> Order{{ orders|length|pluralize }} Placed
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- ==================== ORDERS SECTION ==================== -->
+<div class="orders-section">
+    <div class="container">
+
+        <div class="section-rule">
+            <span class="section-rule-label">Order History</span>
+            <div class="section-rule-line"></div>
+        </div>
+
+        {% if orders %}
+
+            <div class="d-flex flex-column gap-4">
+            {% for order in orders %}
+                <div class="order-card" style="--i: {{ forloop.counter }};">
+
+                    <!-- Card Header -->
+                    <div class="order-card-head">
+                        <div class="order-id">Order <span>#{{ order.id }}</span></div>
+                        <div class="order-meta">
+                            <span class="order-date">{{ order.created_at|date:"N j, Y · g:i A" }}</span>
+                            <span class="status-badge
+                                {% with s=order.get_status_display|lower %}
+                                    {% if 'pending' in s %}status-pending
+                                    {% elif 'processing' in s %}status-processing
+                                    {% elif 'shipped' in s %}status-shipped
+                                    {% elif 'delivered' in s %}status-delivered
+                                    {% elif 'cancelled' in s %}status-cancelled
+                                    {% else %}status-default{% endif %}
+                                {% endwith %}
+                            ">{{ order.get_status_display }}</span>
+                        </div>
+                    </div>
+
+                    <!-- Items Table -->
+                    <div class="order-card-body">
+                        <table class="order-items-table">
+                            <thead>
+                                <tr>
+                                    <th>Product</th>
+                                    <th>Qty</th>
+                                    <th style="text-align:right;">Subtotal</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in order.items.all %}
+                                <tr>
+                                    <td class="item-name-cell">{{ item.product.name }}</td>
+                                    <td class="item-qty-cell">× {{ item.quantity }}</td>
+                                    <td class="item-subtotal-cell">${{ item.subtotal }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Card Footer -->
+                    <div class="order-card-foot">
+                        <span class="order-total-label">Order Total</span>
+                        <span class="order-total-value">{{ order.total_amount }}</span>
+                    </div>
+
+                </div>
+            {% endfor %}
+            </div>
+
+        {% else %}
+
+            <div class="empty-state">
+                <div class="empty-icon">
+                    <i class="bi bi-receipt"></i>
+                </div>
+                <h3 class="empty-title">No orders yet</h3>
+                <p class="empty-sub">You haven't placed any orders. Start browsing the collection.</p>
+                <a href="{% url 'product_list' %}" class="btn-shop-now">Browse Products</a>
+            </div>
+
+        {% endif %}
+
+    </div>
+</div>
+
+{% endblock %}

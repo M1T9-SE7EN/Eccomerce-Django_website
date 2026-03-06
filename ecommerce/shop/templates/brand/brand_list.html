@@ -1,0 +1,543 @@
+{% extends "shop/base.html" %}
+
+{% block title %}Manage Brands — Guramaile{% endblock %}
+
+{% block content %}
+<style>
+    :root {
+        --cream: #F5F0E8;
+        --cream-dark: #EDE7D9;
+        --cream-deeper: #E0D8C8;
+        --black: #0A0A0A;
+        --black-soft: #1C1C1C;
+        --charcoal: #2E2E2E;
+        --gold: #C9A96E;
+        --gold-light: #E8D5B0;
+        --text-muted: #8A8070;
+    }
+
+    body {
+        background-color: var(--cream);
+        font-family: 'DM Sans', sans-serif;
+    }
+
+    /* ========================= */
+    /* Page Header */
+    /* ========================= */
+    .page-header {
+        background: var(--black);
+        padding: 72px 0 52px;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .page-header::before {
+        content: "BRANDS";
+        position: absolute;
+        font-family: 'Playfair Display', serif;
+        font-size: clamp(70px, 14vw, 200px);
+        font-weight: 900;
+        color: rgba(255,255,255,0.03);
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        white-space: nowrap;
+        letter-spacing: -5px;
+        pointer-events: none;
+    }
+
+    .page-header::after {
+        content: "";
+        position: absolute;
+        width: 600px;
+        height: 600px;
+        background: radial-gradient(circle, rgba(201,169,110,0.1) 0%, transparent 70%);
+        top: -200px;
+        right: -150px;
+        pointer-events: none;
+    }
+
+    .header-content { position: relative; z-index: 2; }
+
+    .header-label {
+        font-size: 0.65rem;
+        font-weight: 600;
+        letter-spacing: 4px;
+        text-transform: uppercase;
+        color: var(--gold);
+        display: block;
+        margin-bottom: 14px;
+    }
+
+    .header-title {
+        font-family: 'Playfair Display', serif;
+        font-size: clamp(34px, 4.5vw, 58px);
+        font-weight: 900;
+        color: var(--cream);
+        line-height: 1;
+        letter-spacing: -2px;
+    }
+
+    .header-title span { color: var(--gold); font-style: italic; }
+
+    .header-divider {
+        width: 80px;
+        height: 2px;
+        background: linear-gradient(90deg, var(--gold), transparent);
+        margin: 22px 0 0;
+    }
+
+    .header-breadcrumb {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-top: 20px;
+        font-size: 0.65rem;
+        font-weight: 600;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+    }
+
+    .header-breadcrumb a {
+        color: rgba(255,255,255,0.25);
+        text-decoration: none;
+        transition: color 0.2s ease;
+    }
+
+    .header-breadcrumb a:hover { color: var(--gold); }
+    .header-breadcrumb span   { color: rgba(255,255,255,0.12); }
+    .header-breadcrumb .current { color: rgba(255,255,255,0.45); }
+
+    /* ========================= */
+    /* Main Section */
+    /* ========================= */
+    .main-section {
+        padding: 52px 0 100px;
+    }
+
+    .section-rule {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        margin-bottom: 28px;
+    }
+
+    .section-rule-label {
+        font-size: 0.65rem;
+        font-weight: 600;
+        letter-spacing: 4px;
+        text-transform: uppercase;
+        color: var(--text-muted);
+        white-space: nowrap;
+    }
+
+    .section-rule-line {
+        flex: 1;
+        height: 1px;
+        background: linear-gradient(90deg, var(--cream-deeper), transparent);
+    }
+
+    /* ========================= */
+    /* Panels */
+    /* ========================= */
+    @keyframes riseUp {
+        from { opacity: 0; transform: translateY(24px); }
+        to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .panel {
+        background: #fff;
+        border: 1px solid rgba(0,0,0,0.07);
+        border-radius: 4px;
+        overflow: hidden;
+        opacity: 0;
+        animation: riseUp 0.55s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    .panel-left  { animation-delay: 0.05s; }
+    .panel-right { animation-delay: 0.12s; }
+
+    .panel-head {
+        background: var(--black);
+        padding: 18px 28px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+    }
+
+    .panel-head-label {
+        font-size: 0.6rem;
+        font-weight: 600;
+        letter-spacing: 3px;
+        text-transform: uppercase;
+        color: var(--gold);
+    }
+
+    .panel-head-count {
+        font-size: 0.65rem;
+        color: rgba(255,255,255,0.2);
+        letter-spacing: 1px;
+    }
+
+    .panel-body { padding: 28px; }
+
+    .sticky-panel {
+        position: sticky;
+        top: 88px;
+    }
+
+    /* ========================= */
+    /* Create Form */
+    /* ========================= */
+    .brand-form label {
+        font-size: 0.68rem;
+        font-weight: 600;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        color: var(--text-muted);
+        margin-bottom: 8px;
+        display: block;
+    }
+
+    .brand-form input[type="text"],
+    .brand-form input[type="file"],
+    .brand-form select,
+    .brand-form textarea {
+        background: var(--cream);
+        border: 1px solid var(--cream-deeper);
+        border-radius: 3px;
+        color: var(--black);
+        font-family: 'DM Sans', sans-serif;
+        font-size: 0.9rem;
+        padding: 13px 16px;
+        width: 100%;
+        transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+        outline: none;
+        display: block;
+    }
+
+    .brand-form input[type="file"] {
+        padding: 10px 16px;
+        cursor: pointer;
+        color: var(--text-muted);
+    }
+
+    .brand-form input:focus,
+    .brand-form select:focus,
+    .brand-form textarea:focus {
+        border-color: var(--gold);
+        box-shadow: 0 0 0 3px rgba(201,169,110,0.15);
+        background: #fff;
+    }
+
+    .brand-form p { margin-bottom: 18px; }
+
+    .brand-form p:last-of-type { margin-bottom: 0; }
+
+    .btn-create {
+        display: block;
+        width: 100%;
+        background: var(--gold);
+        color: var(--black);
+        border: 2px solid var(--gold);
+        padding: 13px 24px;
+        border-radius: 3px;
+        font-size: 0.7rem;
+        font-weight: 700;
+        letter-spacing: 3px;
+        text-transform: uppercase;
+        cursor: pointer;
+        transition: all 0.25s ease;
+        text-align: center;
+        margin-top: 24px;
+    }
+
+    .btn-create:hover {
+        background: transparent;
+        color: var(--gold);
+        box-shadow: 0 0 0 1px var(--gold), 0 6px 20px rgba(201,169,110,0.2);
+    }
+
+    /* ========================= */
+    /* Brands Table */
+    /* ========================= */
+    .dash-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 0;
+    }
+
+    .dash-table thead th {
+        font-size: 0.6rem;
+        font-weight: 600;
+        letter-spacing: 3px;
+        text-transform: uppercase;
+        color: var(--text-muted);
+        padding: 14px 24px;
+        border-bottom: 1px solid var(--cream-deeper);
+        background: var(--cream);
+        white-space: nowrap;
+        text-align: left;
+    }
+
+    .dash-table thead th.text-end { text-align: right; }
+
+    .dash-table tbody tr {
+        border-bottom: 1px solid var(--cream-deeper);
+        transition: background 0.15s ease;
+    }
+
+    .dash-table tbody tr:last-child { border-bottom: none; }
+    .dash-table tbody tr:hover { background: #faf9f6; }
+
+    .dash-table td {
+        padding: 16px 24px;
+        font-size: 0.875rem;
+        color: var(--charcoal);
+        vertical-align: middle;
+        border: none;
+    }
+
+    .dash-table td.text-end { text-align: right; }
+
+    /* Logo cell */
+    .brand-logo-cell {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+    }
+
+    .brand-logo-thumb {
+        width: 48px;
+        height: 48px;
+        object-fit: contain;
+        background: var(--cream);
+        border: 1px solid var(--cream-deeper);
+        border-radius: 3px;
+        padding: 6px;
+        flex-shrink: 0;
+    }
+
+    .brand-logo-placeholder {
+        width: 48px;
+        height: 48px;
+        background: var(--cream);
+        border: 1px solid var(--cream-deeper);
+        border-radius: 3px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--text-muted);
+        font-size: 1rem;
+        flex-shrink: 0;
+    }
+
+    .td-name {
+        font-family: 'Playfair Display', serif;
+        font-weight: 700;
+        font-size: 0.95rem !important;
+        color: var(--black) !important;
+    }
+
+    .td-slug {
+        font-family: 'DM Mono', 'Courier New', monospace;
+        font-size: 0.78rem;
+        color: var(--text-muted);
+        background: var(--cream);
+        border: 1px solid var(--cream-deeper);
+        border-radius: 3px;
+        padding: 4px 10px;
+        display: inline-block;
+    }
+
+    /* Action buttons */
+    .btn-dash {
+        font-size: 0.62rem;
+        font-weight: 700;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        padding: 7px 14px;
+        border-radius: 3px;
+        text-decoration: none;
+        transition: all 0.2s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        cursor: pointer;
+        border: none;
+    }
+
+    .btn-dash-primary {
+        background: var(--black);
+        color: var(--cream);
+        border: 1px solid var(--black);
+    }
+
+    .btn-dash-primary:hover {
+        background: var(--gold);
+        border-color: var(--gold);
+        color: var(--black);
+    }
+
+    .btn-dash-danger {
+        background: transparent;
+        color: #c44;
+        border: 1px solid rgba(200,60,60,0.2);
+    }
+
+    .btn-dash-danger:hover {
+        background: rgba(200,60,60,0.08);
+        border-color: rgba(200,60,60,0.4);
+    }
+
+    /* Empty state */
+    .empty-row td {
+        text-align: center;
+        padding: 60px 24px;
+        color: var(--text-muted);
+    }
+
+    .empty-icon-wrap {
+        width: 64px;
+        height: 64px;
+        border: 2px solid var(--cream-deeper);
+        border-radius: 50%;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.4rem;
+        color: var(--text-muted);
+        margin-bottom: 16px;
+    }
+
+    .empty-title {
+        font-family: 'Playfair Display', serif;
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: var(--charcoal);
+        margin-bottom: 6px;
+    }
+
+    .empty-sub {
+        font-size: 0.8rem;
+        color: var(--text-muted);
+    }
+</style>
+
+<!-- ==================== PAGE HEADER ==================== -->
+<div class="page-header">
+    <div class="container-fluid px-4">
+        <div class="header-content">
+            <span class="header-label">Admin · Identity</span>
+            <h1 class="header-title">Manage <span>Brands</span></h1>
+            <div class="header-divider"></div>
+            <div class="header-breadcrumb">
+                <a href="{% url 'admin_dashboard' %}">Dashboard</a>
+                <span>/</span>
+                <span class="current">Brands</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ==================== MAIN SECTION ==================== -->
+<div class="main-section">
+    <div class="container-fluid px-4">
+        <div class="row g-4 align-items-start">
+
+            <!-- Left: Create Form (sticky) -->
+            <div class="col-lg-4">
+                <div class="section-rule">
+                    <span class="section-rule-label">New Brand</span>
+                    <div class="section-rule-line"></div>
+                </div>
+
+                <div class="sticky-panel">
+                    <div class="panel panel-left">
+                        <div class="panel-head">
+                            <span class="panel-head-label">Create Brand</span>
+                        </div>
+                        <div class="panel-body">
+                            <form method="post" enctype="multipart/form-data" class="brand-form">
+                                {% csrf_token %}
+                                {{ form.as_p }}
+                                <button type="submit" class="btn-create">
+                                    <i class="bi bi-plus-lg"></i> Create Brand
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right: Existing Brands Table -->
+            <div class="col-lg-8">
+                <div class="section-rule">
+                    <span class="section-rule-label">All Brands</span>
+                    <div class="section-rule-line"></div>
+                </div>
+
+                <div class="panel panel-right">
+                    <div class="panel-head">
+                        <span class="panel-head-label">Existing Brands</span>
+                        <span class="panel-head-count">{{ brands|length }} total</span>
+                    </div>
+
+                    <table class="dash-table">
+                        <thead>
+                            <tr>
+                                <th>Brand</th>
+                                <th>Slug</th>
+                                <th class="text-end">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for brand in brands %}
+                            <tr>
+                                <td>
+                                    <div class="brand-logo-cell">
+                                        {% if brand.logo %}
+                                            <img src="{{ brand.logo.url }}" class="brand-logo-thumb" alt="{{ brand.name }}">
+                                        {% else %}
+                                            <div class="brand-logo-placeholder">
+                                                <i class="bi bi-tag"></i>
+                                            </div>
+                                        {% endif %}
+                                        <span class="td-name">{{ brand.name }}</span>
+                                    </div>
+                                </td>
+                                <td><span class="td-slug">/{{ brand.slug }}</span></td>
+                                <td class="text-end">
+                                    <div style="display:inline-flex;gap:6px;">
+                                        <a href="{% url 'brand_edit_url' brand.pk %}" class="btn-dash btn-dash-primary">
+                                            <i class="bi bi-pencil"></i> Edit
+                                        </a>
+                                        <a href="{% url 'brand_delete_url' brand.pk %}" class="btn-dash btn-dash-danger"
+                                           onclick="return confirm('Delete \'{{ brand.name }}\'?');">
+                                            <i class="bi bi-trash"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr class="empty-row">
+                                <td colspan="3">
+                                    <div class="empty-icon-wrap">
+                                        <i class="bi bi-tags"></i>
+                                    </div>
+                                    <div class="empty-title">No brands yet</div>
+                                    <p class="empty-sub">Use the form on the left to add your first brand.</p>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+{% endblock %}

@@ -1,0 +1,473 @@
+{% extends "shop/base.html" %}
+{% load crispy_forms_tags %}
+
+{% block title %}{{ title }} — Guramaile{% endblock %}
+
+{% block content %}
+<style>
+    :root {
+        --cream: #F5F0E8;
+        --cream-dark: #EDE7D9;
+        --cream-deeper: #E0D8C8;
+        --black: #0A0A0A;
+        --black-soft: #1C1C1C;
+        --charcoal: #2E2E2E;
+        --gold: #C9A96E;
+        --gold-light: #E8D5B0;
+        --text-muted: #8A8070;
+    }
+
+    body {
+        background-color: var(--cream);
+        font-family: 'DM Sans', sans-serif;
+    }
+
+    /* ========================= */
+    /* Page Header */
+    /* ========================= */
+    .page-header {
+        background: var(--black);
+        padding: 72px 0 52px;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .page-header::before {
+        content: "CATEGORY";
+        position: absolute;
+        font-family: 'Playfair Display', serif;
+        font-size: clamp(60px, 12vw, 170px);
+        font-weight: 900;
+        color: rgba(255,255,255,0.03);
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        white-space: nowrap;
+        letter-spacing: -5px;
+        pointer-events: none;
+    }
+
+    .page-header::after {
+        content: "";
+        position: absolute;
+        width: 600px;
+        height: 600px;
+        background: radial-gradient(circle, rgba(201,169,110,0.1) 0%, transparent 70%);
+        top: -200px;
+        right: -150px;
+        pointer-events: none;
+    }
+
+    .header-content { position: relative; z-index: 2; }
+
+    .header-label {
+        font-size: 0.65rem;
+        font-weight: 600;
+        letter-spacing: 4px;
+        text-transform: uppercase;
+        color: var(--gold);
+        display: block;
+        margin-bottom: 14px;
+    }
+
+    .header-title {
+        font-family: 'Playfair Display', serif;
+        font-size: clamp(34px, 4.5vw, 58px);
+        font-weight: 900;
+        color: var(--cream);
+        line-height: 1;
+        letter-spacing: -2px;
+    }
+
+    .header-title span { color: var(--gold); font-style: italic; }
+
+    .header-divider {
+        width: 80px;
+        height: 2px;
+        background: linear-gradient(90deg, var(--gold), transparent);
+        margin: 22px 0 0;
+    }
+
+    .header-breadcrumb {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-top: 20px;
+        font-size: 0.65rem;
+        font-weight: 600;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+    }
+
+    .header-breadcrumb a {
+        color: rgba(255,255,255,0.25);
+        text-decoration: none;
+        transition: color 0.2s ease;
+    }
+
+    .header-breadcrumb a:hover { color: var(--gold); }
+    .header-breadcrumb span   { color: rgba(255,255,255,0.12); }
+    .header-breadcrumb .current { color: rgba(255,255,255,0.45); }
+
+    /* ========================= */
+    /* Form Section */
+    /* ========================= */
+    .form-section {
+        padding: 52px 0 100px;
+    }
+
+    .section-rule {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        margin-bottom: 28px;
+    }
+
+    .section-rule-label {
+        font-size: 0.65rem;
+        font-weight: 600;
+        letter-spacing: 4px;
+        text-transform: uppercase;
+        color: var(--text-muted);
+        white-space: nowrap;
+    }
+
+    .section-rule-line {
+        flex: 1;
+        height: 1px;
+        background: linear-gradient(90deg, var(--cream-deeper), transparent);
+    }
+
+    /* ========================= */
+    /* Panels */
+    /* ========================= */
+    @keyframes riseUp {
+        from { opacity: 0; transform: translateY(24px); }
+        to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .form-panel {
+        background: #fff;
+        border: 1px solid rgba(0,0,0,0.07);
+        border-radius: 4px;
+        overflow: hidden;
+        opacity: 0;
+        animation: riseUp 0.55s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    .form-panel-main { animation-delay: 0.05s; }
+    .form-panel-side { animation-delay: 0.12s; }
+
+    .panel-head {
+        background: var(--black);
+        padding: 18px 28px;
+    }
+
+    .panel-head-label {
+        font-size: 0.6rem;
+        font-weight: 600;
+        letter-spacing: 3px;
+        text-transform: uppercase;
+        color: var(--gold);
+    }
+
+    .panel-body { padding: 32px 28px; }
+
+    /* ========================= */
+    /* Crispy Form Overrides */
+    /* ========================= */
+    .category-form .form-label,
+    .category-form label {
+        font-size: 0.68rem !important;
+        font-weight: 600 !important;
+        letter-spacing: 2px !important;
+        text-transform: uppercase !important;
+        color: var(--text-muted) !important;
+        margin-bottom: 8px !important;
+        display: block;
+    }
+
+    .category-form .form-control,
+    .category-form input[type="text"],
+    .category-form select,
+    .category-form textarea {
+        background: var(--cream) !important;
+        border: 1px solid var(--cream-deeper) !important;
+        border-radius: 3px !important;
+        color: var(--black) !important;
+        font-family: 'DM Sans', sans-serif !important;
+        font-size: 0.9rem !important;
+        padding: 13px 16px !important;
+        width: 100%;
+        transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+    }
+
+    .category-form .form-control:focus,
+    .category-form input:focus,
+    .category-form select:focus,
+    .category-form textarea:focus {
+        border-color: var(--gold) !important;
+        box-shadow: 0 0 0 3px rgba(201,169,110,0.15) !important;
+        outline: none !important;
+        background: #fff !important;
+    }
+
+    .category-form select {
+        cursor: pointer;
+        appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%238A8070' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E") !important;
+        background-repeat: no-repeat !important;
+        background-position: right 14px center !important;
+        padding-right: 40px !important;
+    }
+
+    .category-form .form-text,
+    .category-form small,
+    .category-form .helptext {
+        font-size: 0.72rem !important;
+        color: var(--text-muted) !important;
+        margin-top: 6px !important;
+        display: block;
+    }
+
+    .category-form .mb-3,
+    .category-form .mb-4 { margin-bottom: 22px !important; }
+
+    /* ========================= */
+    /* Submit Row */
+    /* ========================= */
+    .submit-row {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding-top: 8px;
+        flex-wrap: wrap;
+    }
+
+    .btn-submit {
+        background: var(--gold);
+        color: var(--black);
+        border: 2px solid var(--gold);
+        padding: 13px 36px;
+        border-radius: 3px;
+        font-size: 0.7rem;
+        font-weight: 700;
+        letter-spacing: 3px;
+        text-transform: uppercase;
+        cursor: pointer;
+        transition: all 0.25s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .btn-submit:hover {
+        background: transparent;
+        color: var(--gold);
+        box-shadow: 0 0 0 1px var(--gold), 0 6px 20px rgba(201,169,110,0.2);
+    }
+
+    .btn-cancel {
+        background: transparent;
+        color: var(--text-muted);
+        border: 1px solid var(--cream-deeper);
+        padding: 13px 28px;
+        border-radius: 3px;
+        font-size: 0.68rem;
+        font-weight: 600;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        text-decoration: none;
+        transition: all 0.2s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .btn-cancel:hover {
+        color: var(--black);
+        border-color: var(--black);
+    }
+
+    /* ========================= */
+    /* Sidebar Tips */
+    /* ========================= */
+    .info-card {
+        background: var(--black);
+        border-radius: 4px;
+        padding: 28px;
+        opacity: 0;
+        animation: riseUp 0.55s cubic-bezier(0.16, 1, 0.3, 1) 0.2s forwards;
+    }
+
+    .info-card-label {
+        font-size: 0.58rem;
+        font-weight: 700;
+        letter-spacing: 3px;
+        text-transform: uppercase;
+        color: var(--gold);
+        display: block;
+        margin-bottom: 16px;
+    }
+
+    .info-tip {
+        display: flex;
+        gap: 12px;
+        padding: 12px 0;
+        border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+
+    .info-tip:last-child { border-bottom: none; }
+
+    .info-tip-icon {
+        width: 28px;
+        height: 28px;
+        background: rgba(201,169,110,0.1);
+        border: 1px solid rgba(201,169,110,0.2);
+        border-radius: 3px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.75rem;
+        color: var(--gold);
+        flex-shrink: 0;
+    }
+
+    .info-tip-text {
+        font-size: 0.78rem;
+        color: rgba(255,255,255,0.35);
+        line-height: 1.5;
+    }
+
+    .info-tip-text strong {
+        color: rgba(255,255,255,0.6);
+        display: block;
+        margin-bottom: 2px;
+        font-size: 0.72rem;
+        letter-spacing: 0.5px;
+    }
+
+    /* SEO note */
+    .seo-note {
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+        background: rgba(201,169,110,0.06);
+        border: 1px solid rgba(201,169,110,0.15);
+        border-radius: 3px;
+        padding: 14px 16px;
+        margin-top: 24px;
+        opacity: 0;
+        animation: riseUp 0.55s cubic-bezier(0.16, 1, 0.3, 1) 0.28s forwards;
+    }
+
+    .seo-note i { color: var(--gold); font-size: 0.85rem; flex-shrink: 0; margin-top: 1px; }
+
+    .seo-note-text {
+        font-size: 0.75rem;
+        color: var(--text-muted);
+        line-height: 1.5;
+    }
+</style>
+
+<!-- ==================== PAGE HEADER ==================== -->
+<div class="page-header">
+    <div class="container">
+        <div class="header-content">
+            <span class="header-label">Admin · Categories</span>
+            <h1 class="header-title">{{ title|truncatechars:20 }}</h1>
+            <div class="header-divider"></div>
+            <div class="header-breadcrumb">
+                <a href="{% url 'admin_dashboard' %}">Dashboard</a>
+                <span>/</span>
+                <a href="{% url 'admin_dashboard' %}#categories">Categories</a>
+                <span>/</span>
+                <span class="current">{{ title }}</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ==================== FORM SECTION ==================== -->
+<div class="form-section">
+    <div class="container">
+        <div class="row g-4 align-items-start justify-content-center">
+
+            <!-- Left: Form -->
+            <div class="col-lg-7">
+
+                <div class="section-rule">
+                    <span class="section-rule-label">Category Details</span>
+                    <div class="section-rule-line"></div>
+                </div>
+
+                <div class="form-panel form-panel-main">
+                    <div class="panel-head">
+                        <span class="panel-head-label">{{ title }}</span>
+                    </div>
+                    <div class="panel-body">
+                        <form method="POST" novalidate class="category-form">
+                            {% csrf_token %}
+
+                            {{ form|crispy }}
+
+                            <div class="submit-row mt-4">
+                                <button type="submit" class="btn-submit">
+                                    <i class="bi bi-check-lg"></i> Save Category
+                                </button>
+                                <a href="{% url 'admin_dashboard' %}#categories" class="btn-cancel">
+                                    <i class="bi bi-arrow-left"></i> Cancel
+                                </a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- SEO tip below form -->
+                <div class="seo-note">
+                    <i class="bi bi-lightbulb"></i>
+                    <span class="seo-note-text">
+                        Use a unique, descriptive name — slugs are auto-generated from the category name and affect SEO-friendly URLs across the shop.
+                    </span>
+                </div>
+
+            </div>
+
+            <!-- Right: Tips Sidebar -->
+            <div class="col-lg-4">
+                <div class="section-rule">
+                    <span class="section-rule-label">Guidance</span>
+                    <div class="section-rule-line"></div>
+                </div>
+                <div class="info-card">
+                    <span class="info-card-label">Field Guide</span>
+
+                    <div class="info-tip">
+                        <div class="info-tip-icon"><i class="bi bi-list-ul"></i></div>
+                        <div class="info-tip-text">
+                            <strong>Name</strong>
+                            Displayed in the shop and used to generate the URL slug automatically.
+                        </div>
+                    </div>
+                    <div class="info-tip">
+                        <div class="info-tip-icon"><i class="bi bi-link-45deg"></i></div>
+                        <div class="info-tip-text">
+                            <strong>Slug</strong>
+                            URL-safe identifier. Leave blank to auto-generate from the name. Must be unique.
+                        </div>
+                    </div>
+                    <div class="info-tip">
+                        <div class="info-tip-icon"><i class="bi bi-diagram-2"></i></div>
+                        <div class="info-tip-text">
+                            <strong>Parent</strong>
+                            Assign a parent to nest this as a subcategory. Leave empty for a top-level category.
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+{% endblock %}

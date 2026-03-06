@@ -2,14 +2,14 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, user_passes_test
 from .forms import UserUpdateForm, ProfileUpdateForm, UserRegisterForm, AdminUserCreateForm, AdminUserUpdateForm
+
+# staff_member_required decorator for newer Django
+staff_member_required = user_passes_test(lambda u: u.is_staff)
 from .models import Profile
 from django.contrib.auth import logout
 from django.views.decorators.http import require_http_methods
 from django.contrib.auth.models import User
 from django.urls import reverse
-
-
-staff_member_required = user_passes_test(lambda u: u.is_staff)
 
 
 def register(request):

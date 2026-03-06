@@ -1,0 +1,725 @@
+{% extends 'shop/base.html' %} {% load static %} {% block title %}{% if
+form.instance.pk %}Edit{% else %}Add{% endif %} Product — Guramaile{% endblock
+%} {% block content %}
+<style>
+  :root {
+    --cream: #f5f0e8;
+    --cream-dark: #ede7d9;
+    --cream-deeper: #e0d8c8;
+    --black: #0a0a0a;
+    --black-soft: #1c1c1c;
+    --charcoal: #2e2e2e;
+    --gold: #c9a96e;
+    --gold-light: #e8d5b0;
+    --text-muted: #8a8070;
+  }
+
+  body {
+    background-color: var(--cream);
+    font-family: "DM Sans", sans-serif;
+  }
+
+  /* ========================= */
+  /* Page Header */
+  /* ========================= */
+  .page-header {
+    background: var(--black);
+    padding: 72px 0 52px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .page-header::before {
+    content: "{% if form.instance.pk %}EDIT{% else %}NEW{% endif %}";
+    position: absolute;
+    font-family: "Playfair Display", serif;
+    font-size: clamp(80px, 16vw, 210px);
+    font-weight: 900;
+    color: rgba(255, 255, 255, 0.03);
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    white-space: nowrap;
+    letter-spacing: -5px;
+    pointer-events: none;
+  }
+
+  .page-header::after {
+    content: "";
+    position: absolute;
+    width: 600px;
+    height: 600px;
+    background: radial-gradient(
+      circle,
+      rgba(201, 169, 110, 0.1) 0%,
+      transparent 70%
+    );
+    top: -200px;
+    right: -150px;
+    pointer-events: none;
+  }
+
+  .header-content {
+    position: relative;
+    z-index: 2;
+  }
+
+  .header-label {
+    font-size: 0.65rem;
+    font-weight: 600;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: var(--gold);
+    display: block;
+    margin-bottom: 14px;
+  }
+
+  .header-title {
+    font-family: "Playfair Display", serif;
+    font-size: clamp(34px, 4.5vw, 58px);
+    font-weight: 900;
+    color: var(--cream);
+    line-height: 1;
+    letter-spacing: -2px;
+  }
+
+  .header-title span {
+    color: var(--gold);
+    font-style: italic;
+  }
+
+  .header-divider {
+    width: 80px;
+    height: 2px;
+    background: linear-gradient(90deg, var(--gold), transparent);
+    margin: 22px 0 0;
+  }
+
+  /* Breadcrumb */
+  .header-breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 20px;
+    font-size: 0.65rem;
+    font-weight: 600;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+
+  .header-breadcrumb a {
+    color: rgba(255, 255, 255, 0.25);
+    text-decoration: none;
+    transition: color 0.2s ease;
+  }
+
+  .header-breadcrumb a:hover {
+    color: var(--gold);
+  }
+
+  .header-breadcrumb span {
+    color: rgba(255, 255, 255, 0.15);
+  }
+
+  .header-breadcrumb .current {
+    color: rgba(255, 255, 255, 0.45);
+  }
+
+  /* ========================= */
+  /* Form Section */
+  /* ========================= */
+  .form-section {
+    padding: 52px 0 100px;
+  }
+
+  .section-rule {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 28px;
+  }
+
+  .section-rule-label {
+    font-size: 0.65rem;
+    font-weight: 600;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    white-space: nowrap;
+  }
+
+  .section-rule-line {
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(90deg, var(--cream-deeper), transparent);
+  }
+
+  /* ========================= */
+  /* Panels */
+  /* ========================= */
+  @keyframes riseUp {
+    from {
+      opacity: 0;
+      transform: translateY(24px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .form-panel {
+    background: #fff;
+    border: 1px solid rgba(0, 0, 0, 0.07);
+    border-radius: 4px;
+    overflow: hidden;
+    opacity: 0;
+    animation: riseUp 0.55s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+
+  .form-panel-main {
+    animation-delay: 0.05s;
+  }
+  .form-panel-side {
+    animation-delay: 0.12s;
+  }
+
+  .panel-head {
+    background: var(--black);
+    padding: 18px 28px;
+  }
+
+  .panel-head-label {
+    font-size: 0.6rem;
+    font-weight: 600;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--gold);
+  }
+
+  .panel-body {
+    padding: 28px;
+  }
+
+  /* ========================= */
+  /* Field Groups */
+  /* ========================= */
+  .form-divider {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 24px 0 20px;
+  }
+
+  .form-divider-label {
+    font-size: 0.58rem;
+    font-weight: 700;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    white-space: nowrap;
+  }
+
+  .form-divider-line {
+    flex: 1;
+    height: 1px;
+    background: var(--cream-deeper);
+  }
+
+  /* Field label */
+  .field-label {
+    font-size: 0.68rem;
+    font-weight: 600;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    display: block;
+    margin-bottom: 8px;
+  }
+
+  /* All inputs */
+  .product-form input[type="text"],
+  .product-form input[type="number"],
+  .product-form input[type="file"],
+  .product-form select,
+  .product-form textarea {
+    background: var(--cream) !important;
+    border: 1px solid var(--cream-deeper) !important;
+    border-radius: 3px !important;
+    color: var(--black) !important;
+    font-family: "DM Sans", sans-serif !important;
+    font-size: 0.9rem !important;
+    padding: 13px 16px !important;
+    width: 100%;
+    transition:
+      border-color 0.2s ease,
+      box-shadow 0.2s ease,
+      background 0.2s ease;
+    outline: none;
+    display: block;
+  }
+
+  .product-form input:focus,
+  .product-form select:focus,
+  .product-form textarea:focus {
+    border-color: var(--gold) !important;
+    box-shadow: 0 0 0 3px rgba(201, 169, 110, 0.15) !important;
+    background: #fff !important;
+  }
+
+  .product-form textarea {
+    resize: vertical;
+    min-height: 120px;
+  }
+
+  .product-form select {
+    cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%238A8070' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E") !important;
+    background-repeat: no-repeat !important;
+    background-position: right 14px center !important;
+    padding-right: 40px !important;
+  }
+
+  .product-form input[type="file"] {
+    padding: 10px 16px !important;
+    cursor: pointer;
+    color: var(--text-muted) !important;
+  }
+
+  /* ========================= */
+  /* Image Preview */
+  /* ========================= */
+  .image-preview-wrap {
+    margin-top: 16px;
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+  }
+
+  .image-preview {
+    width: 90px;
+    height: 90px;
+    object-fit: contain;
+    background: var(--cream);
+    border: 1px solid var(--cream-deeper);
+    border-radius: 3px;
+    padding: 8px;
+  }
+
+  .image-preview-meta {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 4px;
+  }
+
+  .image-preview-title {
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: var(--charcoal);
+  }
+
+  .image-preview-sub {
+    font-size: 0.65rem;
+    color: var(--text-muted);
+  }
+
+  /* ========================= */
+  /* Toggle (is_active) */
+  /* ========================= */
+  .toggle-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--cream);
+    border: 1px solid var(--cream-deeper);
+    border-radius: 3px;
+    padding: 14px 18px;
+  }
+
+  .toggle-row-info {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+  }
+
+  .toggle-row-title {
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--black);
+  }
+
+  .toggle-row-sub {
+    font-size: 0.72rem;
+    color: var(--text-muted);
+  }
+
+  /* Custom checkbox toggle */
+  .product-form input[type="checkbox"] {
+    width: 42px !important;
+    height: 24px !important;
+    appearance: none !important;
+    background: var(--cream-deeper) !important;
+    border: 1px solid var(--cream-deeper) !important;
+    border-radius: 100px !important;
+    cursor: pointer !important;
+    position: relative !important;
+    transition:
+      background 0.25s ease,
+      border-color 0.25s ease !important;
+    flex-shrink: 0;
+    padding: 0 !important;
+  }
+
+  .product-form input[type="checkbox"]::after {
+    content: "";
+    position: absolute;
+    width: 18px;
+    height: 18px;
+    background: #fff;
+    border-radius: 50%;
+    top: 2px;
+    left: 2px;
+    transition: transform 0.25s ease;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
+  }
+
+  .product-form input[type="checkbox"]:checked {
+    background: var(--gold) !important;
+    border-color: var(--gold) !important;
+  }
+
+  .product-form input[type="checkbox"]:checked::after {
+    transform: translateX(18px);
+  }
+
+  /* ========================= */
+  /* Sidebar Info Card */
+  /* ========================= */
+  .info-card {
+    background: var(--black);
+    border-radius: 4px;
+    padding: 28px;
+    opacity: 0;
+    animation: riseUp 0.55s cubic-bezier(0.16, 1, 0.3, 1) 0.2s forwards;
+  }
+
+  .info-card-label {
+    font-size: 0.58rem;
+    font-weight: 700;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--gold);
+    display: block;
+    margin-bottom: 16px;
+  }
+
+  .info-tip {
+    display: flex;
+    gap: 12px;
+    padding: 12px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  }
+
+  .info-tip:last-child {
+    border-bottom: none;
+  }
+
+  .info-tip-icon {
+    width: 28px;
+    height: 28px;
+    background: rgba(201, 169, 110, 0.1);
+    border: 1px solid rgba(201, 169, 110, 0.2);
+    border-radius: 3px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    color: var(--gold);
+    flex-shrink: 0;
+  }
+
+  .info-tip-text {
+    font-size: 0.78rem;
+    color: rgba(255, 255, 255, 0.35);
+    line-height: 1.5;
+  }
+
+  .info-tip-text strong {
+    color: rgba(255, 255, 255, 0.6);
+    display: block;
+    margin-bottom: 2px;
+    font-size: 0.72rem;
+    letter-spacing: 0.5px;
+  }
+
+  /* ========================= */
+  /* Submit Row */
+  /* ========================= */
+  .submit-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding-top: 8px;
+    flex-wrap: wrap;
+  }
+
+  .btn-submit {
+    background: var(--gold);
+    color: var(--black);
+    border: 2px solid var(--gold);
+    padding: 13px 36px;
+    border-radius: 3px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.25s ease;
+  }
+
+  .btn-submit:hover {
+    background: transparent;
+    color: var(--gold);
+    box-shadow:
+      0 0 0 1px var(--gold),
+      0 6px 20px rgba(201, 169, 110, 0.2);
+  }
+
+  .btn-cancel {
+    background: transparent;
+    color: var(--text-muted);
+    border: 1px solid var(--cream-deeper);
+    padding: 13px 28px;
+    border-radius: 3px;
+    font-size: 0.68rem;
+    font-weight: 600;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .btn-cancel:hover {
+    color: var(--black);
+    border-color: var(--black);
+  }
+</style>
+
+<!-- ==================== PAGE HEADER ==================== -->
+<div class="page-header">
+  <div class="container">
+    <div class="header-content">
+      <span class="header-label">
+        {% if form.instance.pk %}Admin · Edit Product{% else %}Admin · New
+        Product{% endif %}
+      </span>
+      <h1 class="header-title">
+        {% if form.instance.pk %}Edit <span>Product</span>{% else %}Add
+        <span>Product</span>{% endif %}
+      </h1>
+      <div class="header-divider"></div>
+      <div class="header-breadcrumb">
+        <a href="{% url 'admin_dashboard' %}">Dashboard</a>
+        <span>/</span>
+        <a href="{% url 'admin_dashboard' %}#products">Products</a>
+        <span>/</span>
+        <span class="current"
+          >{% if form.instance.pk %}{{ form.instance.name|truncatechars:30 }}{%
+          else %}New{% endif %}</span
+        >
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== FORM SECTION ==================== -->
+<div class="form-section">
+  <div class="container">
+    <form method="POST" enctype="multipart/form-data" class="product-form">
+      {% csrf_token %}
+      <div class="row g-4 align-items-start">
+        <!-- Left: Main Form -->
+        <div class="col-lg-8">
+          <!-- Core Details -->
+          <div class="section-rule">
+            <span class="section-rule-label">Product Details</span>
+            <div class="section-rule-line"></div>
+          </div>
+
+          <div class="form-panel form-panel-main">
+            <div class="panel-head">
+              <span class="panel-head-label">Core Information</span>
+            </div>
+            <div class="panel-body">
+              <div class="row g-4">
+                <div class="col-md-8">
+                  <label class="field-label" for="id_name">Product Name</label>
+                  {{ form.name }}
+                </div>
+                <div class="col-md-4">
+                  <label class="field-label" for="id_slug">Slug</label>
+                  {{ form.slug }}
+                </div>
+              </div>
+
+              <div class="form-divider mt-4">
+                <span class="form-divider-label">Classification</span>
+                <div class="form-divider-line"></div>
+              </div>
+
+              <div class="row g-4">
+                <div class="col-md-6">
+                  <label class="field-label" for="id_category">Category</label>
+                  {{ form.category }}
+                </div>
+                <div class="col-md-6">
+                  <label class="field-label" for="id_brand">Brand</label>
+                  {{ form.brand }}
+                </div>
+              </div>
+
+              <div class="form-divider mt-4">
+                <span class="form-divider-label">Pricing & Stock</span>
+                <div class="form-divider-line"></div>
+              </div>
+
+              <div class="row g-4">
+                <div class="col-md-6">
+                  <label class="field-label" for="id_price">Price ($)</label>
+                  {{ form.price }}
+                </div>
+                <div class="col-md-6">
+                  <label class="field-label" for="id_stock">Stock Units</label>
+                  {{ form.stock }}
+                </div>
+              </div>
+
+              <div class="form-divider mt-4">
+                <span class="form-divider-label">Description</span>
+                <div class="form-divider-line"></div>
+              </div>
+
+              <label class="field-label" for="id_description"
+                >Product Description</label
+              >
+              {{ form.description }}
+            </div>
+          </div>
+
+          <!-- Media & Status -->
+          <div class="section-rule mt-4">
+            <span class="section-rule-label">Media & Status</span>
+            <div class="section-rule-line"></div>
+          </div>
+
+          <div class="form-panel" style="animation-delay: 0.18s">
+            <div class="panel-head">
+              <span class="panel-head-label">Image & Visibility</span>
+            </div>
+            <div class="panel-body">
+              <label class="field-label" for="id_image">Product Image</label>
+              {{ form.image }} {% if form.instance.pk and form.instance.image %}
+              <div class="image-preview-wrap">
+                <img
+                  src="{{ form.instance.image.url }}"
+                  class="image-preview"
+                  alt="{{ form.instance.name }}"
+                />
+                <div class="image-preview-meta">
+                  <span class="image-preview-title">Current Image</span>
+                  <span class="image-preview-sub"
+                    >Upload a new file to replace it</span
+                  >
+                </div>
+              </div>
+              {% endif %}
+
+              <div class="form-divider mt-4">
+                <span class="form-divider-label">Visibility</span>
+                <div class="form-divider-line"></div>
+              </div>
+
+              <div class="toggle-row">
+                <div class="toggle-row-info">
+                  <span class="toggle-row-title">Active Listing</span>
+                  <span class="toggle-row-sub"
+                    >Toggle to show or hide this product in the shop</span
+                  >
+                </div>
+                {{ form.is_active }}
+              </div>
+            </div>
+          </div>
+
+          <!-- Actions -->
+          <div class="submit-row mt-4">
+            <button type="submit" class="btn-submit">
+              {% if form.instance.pk %}
+              <i class="bi bi-check-lg"></i> Update Product {% else %}
+              <i class="bi bi-plus-lg"></i> Create Product {% endif %}
+            </button>
+            <a href="{% url 'admin_dashboard' %}#products" class="btn-cancel">
+              <i class="bi bi-arrow-left"></i> Cancel
+            </a>
+          </div>
+        </div>
+
+        <!-- Right: Tips Sidebar -->
+        <div class="col-lg-4">
+          <div class="section-rule">
+            <span class="section-rule-label">Guidance</span>
+            <div class="section-rule-line"></div>
+          </div>
+          <div class="info-card">
+            <span class="info-card-label">Field Guide</span>
+
+            <div class="info-tip">
+              <div class="info-tip-icon"><i class="bi bi-tag"></i></div>
+            </div>
+            <div class="info-tip">
+              <div class="info-tip-icon">
+                <i class="bi bi-currency-dollar"></i>
+              </div>
+              <div class="info-tip-text">
+                <strong>Price</strong>
+                Enter a decimal value, e.g. 29.99. Displayed with $ prefix in
+                the shop.
+              </div>
+            </div>
+            <div class="info-tip">
+              <div class="info-tip-icon"><i class="bi bi-box-seam"></i></div>
+              <div class="info-tip-text">
+                <strong>Stock</strong>
+                Items with 5 or fewer units will trigger a low-stock alert on
+                the dashboard.
+              </div>
+            </div>
+            <div class="info-tip">
+              <div class="info-tip-icon"><i class="bi bi-image"></i></div>
+              <div class="info-tip-text">
+                <strong>Image</strong>
+                Use square images for best display. Existing image shown as
+                preview.
+              </div>
+            </div>
+            <div class="info-tip">
+              <div class="info-tip-icon"><i class="bi bi-eye"></i></div>
+              <div class="info-tip-text">
+                <strong>Active</strong>
+                Inactive products are hidden from the shop but kept in the
+                database.
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
+{% endblock %}

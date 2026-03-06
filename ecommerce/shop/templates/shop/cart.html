@@ -1,0 +1,553 @@
+{% extends "shop/base.html" %}
+
+{% block content %}
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+<style>
+    :root {
+        --cream: #F5F0E8;
+        --cream-dark: #EDE7D9;
+        --cream-deeper: #E0D8C8;
+        --black: #0A0A0A;
+        --black-soft: #1C1C1C;
+        --charcoal: #2E2E2E;
+        --gold: #C9A96E;
+        --gold-light: #E8D5B0;
+        --text-muted: #8A8070;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+        background-color: var(--cream);
+        color: var(--black);
+        font-family: 'DM Sans', sans-serif;
+        min-height: 100vh;
+    }
+
+    /* Grain texture */
+    body::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+        pointer-events: none;
+        z-index: 1000;
+        opacity: 0.4;
+    }
+
+    /* ========================= */
+    /* Page Header */
+    /* ========================= */
+    .page-header {
+        background: var(--black);
+        padding: 80px 0 60px;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .page-header::before {
+        content: "CART";
+        position: absolute;
+        font-family: 'Playfair Display', serif;
+        font-size: clamp(100px, 18vw, 220px);
+        font-weight: 900;
+        color: rgba(255,255,255,0.03);
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        white-space: nowrap;
+        letter-spacing: -5px;
+        pointer-events: none;
+    }
+
+    .page-header::after {
+        content: "";
+        position: absolute;
+        width: 600px;
+        height: 600px;
+        background: radial-gradient(circle, rgba(201,169,110,0.12) 0%, transparent 70%);
+        top: -200px;
+        right: -150px;
+        pointer-events: none;
+    }
+
+    .header-content { position: relative; z-index: 2; }
+
+    .header-label {
+        font-size: 0.65rem;
+        font-weight: 600;
+        letter-spacing: 4px;
+        text-transform: uppercase;
+        color: var(--gold);
+        display: block;
+        margin-bottom: 16px;
+    }
+
+    .header-title {
+        font-family: 'Playfair Display', serif;
+        font-size: clamp(38px, 5vw, 64px);
+        font-weight: 900;
+        color: var(--cream);
+        line-height: 1;
+        letter-spacing: -2px;
+    }
+
+    .header-title span {
+        color: var(--gold);
+        font-style: italic;
+    }
+
+    .header-divider {
+        width: 80px;
+        height: 2px;
+        background: linear-gradient(90deg, var(--gold), transparent);
+        margin: 24px 0;
+    }
+
+    .item-count-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: rgba(255,255,255,0.06);
+        border: 1px solid rgba(255,255,255,0.1);
+        color: rgba(255,255,255,0.5);
+        padding: 8px 18px;
+        border-radius: 100px;
+        font-size: 0.75rem;
+        font-weight: 500;
+        letter-spacing: 1px;
+    }
+
+    .item-count-badge span { color: var(--gold); font-weight: 700; }
+
+    /* ========================= */
+    /* Cart Section */
+    /* ========================= */
+    .cart-section {
+        padding: 60px 0 100px;
+        background: var(--cream);
+    }
+
+    .section-rule {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        margin-bottom: 40px;
+    }
+
+    .section-rule-label {
+        font-size: 0.65rem;
+        font-weight: 600;
+        letter-spacing: 4px;
+        text-transform: uppercase;
+        color: var(--text-muted);
+        white-space: nowrap;
+    }
+
+    .section-rule-line {
+        flex: 1;
+        height: 1px;
+        background: linear-gradient(90deg, var(--cream-deeper), transparent);
+    }
+
+    /* ========================= */
+    /* Cart Table */
+    /* ========================= */
+    .cart-table-wrap {
+        background: #fff;
+        border: 1px solid rgba(0,0,0,0.07);
+        border-radius: 4px;
+        overflow: hidden;
+    }
+
+    .cart-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 0;
+    }
+
+    .cart-table thead {
+        background: var(--black);
+    }
+
+    .cart-table thead th {
+        font-family: 'DM Sans', sans-serif;
+        font-size: 0.62rem;
+        font-weight: 600;
+        letter-spacing: 3px;
+        text-transform: uppercase;
+        color: var(--gold);
+        padding: 18px 24px;
+        border: none;
+    }
+
+    .cart-table tbody tr {
+        border-bottom: 1px solid var(--cream-deeper);
+        transition: background 0.2s ease;
+    }
+
+    .cart-table tbody tr:last-child { border-bottom: none; }
+
+    .cart-table tbody tr:hover { background: var(--cream); }
+
+    .cart-table td {
+        padding: 20px 24px;
+        vertical-align: middle;
+        border: none;
+        font-size: 0.9rem;
+        color: var(--charcoal);
+    }
+
+    .product-name-cell {
+        font-family: 'Playfair Display', serif;
+        font-weight: 700;
+        font-size: 1rem !important;
+        color: var(--black) !important;
+    }
+
+    .price-cell {
+        font-weight: 500;
+        color: var(--text-muted) !important;
+    }
+
+    .qty-cell {
+        font-weight: 600;
+        color: var(--black) !important;
+    }
+
+    .subtotal-cell {
+        font-family: 'Playfair Display', serif;
+        font-size: 1rem !important;
+        font-weight: 700;
+        color: var(--black) !important;
+    }
+
+    /* ========================= */
+    /* Remove Button */
+    /* ========================= */
+    .btn-remove {
+        display: inline-block;
+        background: transparent;
+        color: var(--text-muted);
+        border: 1px solid var(--cream-deeper);
+        padding: 7px 14px;
+        border-radius: 3px;
+        font-size: 0.65rem;
+        font-weight: 600;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        text-decoration: none;
+        transition: all 0.25s ease;
+        white-space: nowrap;
+    }
+
+    .btn-remove:hover {
+        background: #fee;
+        border-color: #e88;
+        color: #c33;
+    }
+
+    /* ========================= */
+    /* Order Summary Panel */
+    /* ========================= */
+    .summary-panel {
+        background: var(--black);
+        border-radius: 4px;
+        padding: 36px;
+        position: sticky;
+        top: 24px;
+    }
+
+    .summary-label {
+        font-size: 0.62rem;
+        font-weight: 600;
+        letter-spacing: 3px;
+        text-transform: uppercase;
+        color: var(--gold);
+        display: block;
+        margin-bottom: 20px;
+    }
+
+    .summary-title {
+        font-family: 'Playfair Display', serif;
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--cream);
+        margin-bottom: 28px;
+        line-height: 1.2;
+    }
+
+    .summary-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 0;
+        border-bottom: 1px solid rgba(255,255,255,0.06);
+        font-size: 0.85rem;
+        color: rgba(255,255,255,0.45);
+    }
+
+    .summary-row.total-row {
+        border-bottom: none;
+        border-top: 1px solid rgba(255,255,255,0.12);
+        margin-top: 8px;
+        padding-top: 20px;
+    }
+
+    .summary-row.total-row .summary-row-label {
+        font-size: 0.75rem;
+        font-weight: 600;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        color: rgba(255,255,255,0.5);
+    }
+
+    .summary-row.total-row .summary-row-value {
+        font-family: 'Playfair Display', serif;
+        font-size: 2rem;
+        font-weight: 900;
+        color: var(--cream);
+        letter-spacing: -1px;
+    }
+
+    .summary-row-value {
+        color: rgba(255,255,255,0.7);
+        font-weight: 500;
+    }
+
+    /* ========================= */
+    /* Checkout Button */
+    /* ========================= */
+    .btn-checkout {
+        display: block;
+        width: 100%;
+        background: var(--gold);
+        color: var(--black);
+        border: 2px solid var(--gold);
+        padding: 16px 24px;
+        border-radius: 3px;
+        font-size: 0.72rem;
+        font-weight: 700;
+        letter-spacing: 3px;
+        text-transform: uppercase;
+        text-align: center;
+        text-decoration: none;
+        margin-top: 28px;
+        transition: all 0.25s ease;
+    }
+
+    .btn-checkout:hover {
+        background: transparent;
+        color: var(--gold);
+        box-shadow: 0 0 0 1px var(--gold), 0 8px 20px rgba(201,169,110,0.2);
+    }
+
+    .btn-continue {
+        display: block;
+        width: 100%;
+        background: transparent;
+        color: rgba(255,255,255,0.35);
+        border: 1px solid rgba(255,255,255,0.1);
+        padding: 12px 24px;
+        border-radius: 3px;
+        font-size: 0.65rem;
+        font-weight: 600;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        text-align: center;
+        text-decoration: none;
+        margin-top: 12px;
+        transition: all 0.2s ease;
+    }
+
+    .btn-continue:hover {
+        color: rgba(255,255,255,0.7);
+        border-color: rgba(255,255,255,0.25);
+    }
+
+    /* ========================= */
+    /* Empty State */
+    /* ========================= */
+    .empty-state {
+        text-align: center;
+        padding: 80px 20px;
+        background: #fff;
+        border: 1px solid rgba(0,0,0,0.07);
+        border-radius: 4px;
+    }
+
+    .empty-icon {
+        width: 80px;
+        height: 80px;
+        border: 2px solid var(--cream-deeper);
+        border-radius: 50%;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 24px;
+        color: var(--text-muted);
+        font-size: 28px;
+    }
+
+    .empty-title {
+        font-family: 'Playfair Display', serif;
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: var(--charcoal);
+        margin-bottom: 10px;
+    }
+
+    .empty-sub {
+        color: var(--text-muted);
+        font-size: 0.9rem;
+        margin-bottom: 28px;
+    }
+
+    .btn-shop-now {
+        display: inline-block;
+        background: var(--black);
+        color: var(--cream);
+        border: 2px solid var(--black);
+        padding: 13px 32px;
+        border-radius: 3px;
+        font-size: 0.7rem;
+        font-weight: 700;
+        letter-spacing: 3px;
+        text-transform: uppercase;
+        text-decoration: none;
+        transition: all 0.25s ease;
+    }
+
+    .btn-shop-now:hover {
+        background: var(--gold);
+        border-color: var(--gold);
+        color: var(--black);
+    }
+
+    /* ========================= */
+    /* Animations */
+    /* ========================= */
+    @keyframes riseUp {
+        from { opacity: 0; transform: translateY(30px); }
+        to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .animate-in {
+        opacity: 0;
+        animation: riseUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    .delay-1 { animation-delay: 0.05s; }
+    .delay-2 { animation-delay: 0.15s; }
+    .delay-3 { animation-delay: 0.25s; }
+</style>
+
+<!-- ==================== PAGE HEADER ==================== -->
+<div class="page-header">
+    <div class="container">
+        <div class="header-content">
+            <span class="header-label">Review & Checkout</span>
+            <h1 class="header-title">Your <span>Cart</span></h1>
+            <div class="header-divider"></div>
+            {% if cart_items %}
+            <div class="item-count-badge">
+                <span>{{ cart_items|length }}</span> Item{{ cart_items|length|pluralize }} in Bag
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- ==================== CART SECTION ==================== -->
+<div class="cart-section">
+    <div class="container">
+
+        {% if cart_items %}
+
+        <div class="row g-5 align-items-start">
+
+            <!-- Left: Items Table -->
+            <div class="col-lg-8 animate-in delay-1">
+                <div class="section-rule mb-4">
+                    <span class="section-rule-label">Items</span>
+                    <div class="section-rule-line"></div>
+                </div>
+
+                <div class="cart-table-wrap">
+                    <table class="cart-table">
+                        <thead>
+                            <tr>
+                                <th>Product</th>
+                                <th>Price</th>
+                                <th>Qty</th>
+                                <th>Subtotal</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in cart_items %}
+                            <tr>
+                                <td class="product-name-cell">{{ item.product.name }}</td>
+                                <td class="price-cell">${{ item.product.price }}</td>
+                                <td class="qty-cell">× {{ item.quantity }}</td>
+                                <td class="subtotal-cell">${{ item.subtotal }}</td>
+                                <td>
+                                    <a href="{% url 'cart_remove' item.product.id %}" class="btn-remove">Remove</a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Right: Order Summary -->
+            <div class="col-lg-4 animate-in delay-2">
+                <div class="section-rule mb-4">
+                    <span class="section-rule-label">Summary</span>
+                    <div class="section-rule-line"></div>
+                </div>
+
+                <div class="summary-panel">
+                    <span class="summary-label">Order Summary</span>
+                    <div class="summary-title">Ready to<br>check out?</div>
+
+                    {% for item in cart_items %}
+                    <div class="summary-row">
+                        <span class="summary-row-label">{{ item.product.name|truncatechars:22 }}</span>
+                        <span class="summary-row-value">${{ item.subtotal }}</span>
+                    </div>
+                    {% endfor %}
+
+                    <div class="summary-row total-row">
+                        <span class="summary-row-label">Total</span>
+                        <span class="summary-row-value">${{ total }}</span>
+                    </div>
+
+                    <a href="{% url 'checkout' %}" class="btn-checkout">Proceed to Checkout</a>
+                    <a href="{% url 'product_list' %}" class="btn-continue">← Continue Shopping</a>
+                </div>
+            </div>
+
+        </div>
+
+        {% else %}
+
+        <div class="animate-in delay-1">
+            <div class="empty-state">
+                <div class="empty-icon">
+                    <i class="bi bi-bag"></i>
+                </div>
+                <h3 class="empty-title">Your bag is empty</h3>
+                <p class="empty-sub">Looks like you haven't added anything yet.</p>
+                <a href="{% url 'product_list' %}" class="btn-shop-now">Browse the Collection</a>
+            </div>
+        </div>
+
+        {% endif %}
+
+    </div>
+</div>
+
+{% endblock %}

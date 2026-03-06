@@ -507,9 +507,8 @@
 
             <li class="nav-link-item">
               <a href="{% url 'cart_detail' %}">
-                <i class="bi bi-bag"></i> Cart {% with count=cart_item_count %}
-                {% if count %}<span class="cart-badge">{{ count }}</span>{%
-                endif %} {% endwith %}
+                <i class="bi bi-bag"></i> Cart {% cart_item_count as count %}
+                {% if count %}<span class="cart-badge">{{ count }}</span>{% endif %}
               </a>
             </li>
 

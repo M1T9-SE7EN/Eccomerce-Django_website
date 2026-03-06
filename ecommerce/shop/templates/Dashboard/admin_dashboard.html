@@ -1,0 +1,838 @@
+{% extends "shop/base.html" %}
+
+{% block title %}Admin Dashboard — Guramaile{% endblock %}
+
+{% block content %}
+<style>
+    :root {
+        --cream: #F5F0E8;
+        --cream-dark: #EDE7D9;
+        --cream-deeper: #E0D8C8;
+        --black: #0A0A0A;
+        --black-soft: #1C1C1C;
+        --charcoal: #2E2E2E;
+        --gold: #C9A96E;
+        --gold-light: #E8D5B0;
+        --text-muted: #8A8070;
+    }
+
+    body {
+        background-color: var(--cream);
+        font-family: 'DM Sans', sans-serif;
+    }
+
+    /* ========================= */
+    /* Page Header */
+    /* ========================= */
+    .page-header {
+        background: var(--black);
+        padding: 72px 0 52px;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .page-header::before {
+        content: "ADMIN";
+        position: absolute;
+        font-family: 'Playfair Display', serif;
+        font-size: clamp(80px, 15vw, 200px);
+        font-weight: 900;
+        color: rgba(255,255,255,0.03);
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        white-space: nowrap;
+        letter-spacing: -5px;
+        pointer-events: none;
+    }
+
+    .page-header::after {
+        content: "";
+        position: absolute;
+        width: 600px;
+        height: 600px;
+        background: radial-gradient(circle, rgba(201,169,110,0.1) 0%, transparent 70%);
+        top: -200px;
+        right: -150px;
+        pointer-events: none;
+    }
+
+    .header-content { position: relative; z-index: 2; }
+
+    .header-label {
+        font-size: 0.65rem;
+        font-weight: 600;
+        letter-spacing: 4px;
+        text-transform: uppercase;
+        color: var(--gold);
+        display: block;
+        margin-bottom: 14px;
+    }
+
+    .header-title {
+        font-family: 'Playfair Display', serif;
+        font-size: clamp(34px, 4.5vw, 58px);
+        font-weight: 900;
+        color: var(--cream);
+        line-height: 1;
+        letter-spacing: -2px;
+    }
+
+    .header-title span { color: var(--gold); font-style: italic; }
+
+    .header-divider {
+        width: 80px;
+        height: 2px;
+        background: linear-gradient(90deg, var(--gold), transparent);
+        margin: 22px 0 0;
+    }
+
+    /* ========================= */
+    /* Dashboard Body */
+    /* ========================= */
+    .dashboard-body {
+        padding: 48px 0 100px;
+    }
+
+    /* ========================= */
+    /* Stat Cards */
+    /* ========================= */
+    @keyframes riseUp {
+        from { opacity: 0; transform: translateY(24px); }
+        to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .stat-card {
+        background: #fff;
+        border: 1px solid rgba(0,0,0,0.07);
+        border-radius: 4px;
+        padding: 28px 24px;
+        position: relative;
+        overflow: hidden;
+        opacity: 0;
+        animation: riseUp 0.55s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        animation-delay: calc(var(--i) * 0.08s);
+        transition: box-shadow 0.3s ease, transform 0.3s ease;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 16px 40px rgba(0,0,0,0.1);
+    }
+
+    .stat-card::before {
+        content: "";
+        position: absolute;
+        top: 0; left: 0;
+        width: 0; height: 3px;
+        background: linear-gradient(90deg, var(--black), var(--gold));
+        transition: width 0.4s ease;
+    }
+
+    .stat-card:hover::before { width: 100%; }
+
+    .stat-card-icon {
+        width: 44px;
+        height: 44px;
+        border-radius: 3px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.15rem;
+        margin-bottom: 16px;
+    }
+
+    .icon-gold    { background: rgba(201,169,110,0.12); color: var(--gold); }
+    .icon-red     { background: rgba(220,80,80,0.1);   color: #e07070; }
+    .icon-green   { background: rgba(100,200,150,0.1); color: #6ecfa0; }
+    .icon-blue    { background: rgba(100,150,255,0.1); color: #7aaeff; }
+
+    .stat-label {
+        font-size: 0.6rem;
+        font-weight: 600;
+        letter-spacing: 3px;
+        text-transform: uppercase;
+        color: var(--text-muted);
+        display: block;
+        margin-bottom: 6px;
+    }
+
+    .stat-value {
+        font-family: 'Playfair Display', serif;
+        font-size: 2.2rem;
+        font-weight: 900;
+        color: var(--black);
+        line-height: 1;
+        letter-spacing: -1px;
+    }
+
+    .stat-action {
+        display: inline-block;
+        margin-top: 14px;
+        font-size: 0.65rem;
+        font-weight: 600;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        color: var(--gold);
+        text-decoration: none;
+        transition: opacity 0.2s ease;
+    }
+
+    .stat-action:hover { opacity: 0.7; }
+
+    /* ========================= */
+    /* Tab Navigation */
+    /* ========================= */
+    .dash-tabs-wrap {
+        border-bottom: 1px solid var(--cream-deeper);
+        margin-bottom: 36px;
+        overflow-x: auto;
+    }
+
+    .dash-tabs {
+        display: flex;
+        gap: 0;
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        white-space: nowrap;
+    }
+
+    .dash-tab-item a {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 14px 22px;
+        font-size: 0.7rem;
+        font-weight: 600;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        color: var(--text-muted);
+        text-decoration: none;
+        border-bottom: 2px solid transparent;
+        transition: color 0.2s ease, border-color 0.2s ease;
+        position: relative;
+        bottom: -1px;
+    }
+
+    .dash-tab-item a:hover { color: var(--charcoal); }
+    .dash-tab-item a.active { color: var(--black); border-bottom-color: var(--black); }
+
+    /* ========================= */
+    /* Table Panel */
+    /* ========================= */
+    .table-panel {
+        background: #fff;
+        border: 1px solid rgba(0,0,0,0.07);
+        border-radius: 4px;
+        overflow: hidden;
+    }
+
+    .table-panel-head {
+        background: var(--black);
+        padding: 18px 28px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 12px;
+    }
+
+    .table-panel-label {
+        font-size: 0.6rem;
+        font-weight: 600;
+        letter-spacing: 3px;
+        text-transform: uppercase;
+        color: var(--gold);
+    }
+
+    .dash-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 0;
+    }
+
+    .dash-table thead th {
+        font-size: 0.6rem;
+        font-weight: 600;
+        letter-spacing: 3px;
+        text-transform: uppercase;
+        color: var(--text-muted);
+        padding: 14px 24px;
+        border-bottom: 1px solid var(--cream-deeper);
+        background: var(--cream);
+        white-space: nowrap;
+        text-align: left;
+    }
+
+    .dash-table thead th.text-end { text-align: right; }
+
+    .dash-table tbody tr {
+        border-bottom: 1px solid var(--cream-deeper);
+        transition: background 0.15s ease;
+    }
+
+    .dash-table tbody tr:last-child { border-bottom: none; }
+    .dash-table tbody tr:hover { background: #faf9f6; }
+
+    .dash-table td {
+        padding: 14px 24px;
+        font-size: 0.875rem;
+        color: var(--charcoal);
+        vertical-align: middle;
+        border: none;
+    }
+
+    .dash-table td.fw-name {
+        font-weight: 600;
+        color: var(--black);
+    }
+
+    .dash-table td.text-end { text-align: right; }
+
+    .empty-row td {
+        text-align: center;
+        padding: 40px 24px;
+        color: var(--text-muted);
+        font-size: 0.82rem;
+        font-style: italic;
+    }
+
+    /* ========================= */
+    /* Action Buttons */
+    /* ========================= */
+    .btn-dash {
+        font-size: 0.62rem;
+        font-weight: 700;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        padding: 7px 14px;
+        border-radius: 3px;
+        text-decoration: none;
+        transition: all 0.2s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        cursor: pointer;
+        border: none;
+    }
+
+    .btn-dash-primary {
+        background: var(--black);
+        color: var(--cream);
+        border: 1px solid var(--black);
+    }
+
+    .btn-dash-primary:hover {
+        background: var(--gold);
+        border-color: var(--gold);
+        color: var(--black);
+    }
+
+    .btn-dash-danger {
+        background: transparent;
+        color: #c44;
+        border: 1px solid rgba(200,60,60,0.2);
+    }
+
+    .btn-dash-danger:hover {
+        background: rgba(200,60,60,0.08);
+        border-color: rgba(200,60,60,0.4);
+    }
+
+    .btn-dash-secondary {
+        background: transparent;
+        color: var(--text-muted);
+        border: 1px solid var(--cream-deeper);
+    }
+
+    .btn-dash-secondary:hover {
+        color: var(--black);
+        border-color: var(--black);
+    }
+
+    .btn-dash-add {
+        background: var(--gold);
+        color: var(--black);
+        border: 1px solid var(--gold);
+        margin-bottom: 20px;
+    }
+
+    .btn-dash-add:hover {
+        background: var(--gold-light);
+        border-color: var(--gold-light);
+    }
+
+    /* ========================= */
+    /* Status / Badges */
+    /* ========================= */
+    .badge-low-stock {
+        font-size: 0.58rem;
+        font-weight: 700;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        padding: 4px 10px;
+        border-radius: 100px;
+        background: rgba(220,80,80,0.1);
+        color: #e07070;
+        border: 1px solid rgba(220,80,80,0.2);
+    }
+
+    .badge-staff {
+        font-size: 0.58rem;
+        font-weight: 700;
+        letter-spacing: 2px;
+        padding: 4px 10px;
+        border-radius: 100px;
+        background: rgba(201,169,110,0.12);
+        color: var(--gold);
+        border: 1px solid rgba(201,169,110,0.25);
+    }
+
+    .badge-super {
+        font-size: 0.58rem;
+        font-weight: 700;
+        letter-spacing: 2px;
+        padding: 4px 10px;
+        border-radius: 100px;
+        background: rgba(100,150,255,0.1);
+        color: #7aaeff;
+        border: 1px solid rgba(100,150,255,0.2);
+    }
+
+    .stock-bar-wrap {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .stock-bar {
+        width: 80px;
+        height: 5px;
+        background: var(--cream-deeper);
+        border-radius: 100px;
+        overflow: hidden;
+        flex-shrink: 0;
+    }
+
+    .stock-bar-fill {
+        height: 100%;
+        background: #e07070;
+        border-radius: 100px;
+    }
+
+    .stock-units {
+        font-size: 0.75rem;
+        color: var(--text-muted);
+    }
+
+    /* Brand logo thumbnail */
+    .brand-logo-thumb {
+        width: 40px;
+        height: 40px;
+        object-fit: contain;
+        background: var(--cream);
+        border: 1px solid var(--cream-deeper);
+        border-radius: 3px;
+        padding: 4px;
+    }
+
+    .section-rule {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        margin-bottom: 32px;
+    }
+
+    .section-rule-label {
+        font-size: 0.65rem;
+        font-weight: 600;
+        letter-spacing: 4px;
+        text-transform: uppercase;
+        color: var(--text-muted);
+        white-space: nowrap;
+    }
+
+    .section-rule-line {
+        flex: 1;
+        height: 1px;
+        background: linear-gradient(90deg, var(--cream-deeper), transparent);
+    }
+</style>
+
+<!-- ==================== PAGE HEADER ==================== -->
+<div class="page-header">
+    <div class="container-fluid px-4">
+        <div class="header-content">
+            <span class="header-label">Staff Access</span>
+            <h1 class="header-title">Admin <span>Dashboard</span></h1>
+            <div class="header-divider"></div>
+        </div>
+    </div>
+</div>
+
+<!-- ==================== DASHBOARD BODY ==================== -->
+<div class="dashboard-body">
+    <div class="container-fluid px-4">
+
+        <!-- ===== Stat Cards ===== -->
+        <div class="row g-3 mb-5">
+            <div class="col-xl-3 col-md-6" style="--i:1">
+                <div class="stat-card">
+                    <div class="stat-card-icon icon-gold"><i class="bi bi-box-seam"></i></div>
+                    <span class="stat-label">Inventory Items</span>
+                    <div class="stat-value">{{ total_products }}</div>
+                </div>
+            </div>
+            <div class="col-xl-3 col-md-6" style="--i:2">
+                <div class="stat-card">
+                    <div class="stat-card-icon icon-red"><i class="bi bi-exclamation-triangle"></i></div>
+                    <span class="stat-label">Restock Required</span>
+                    <div class="stat-value">{{ low_stock_count }}</div>
+                </div>
+            </div>
+            <div class="col-xl-3 col-md-6" style="--i:3">
+                <div class="stat-card">
+                    <div class="stat-card-icon icon-green"><i class="bi bi-person-check"></i></div>
+                    <span class="stat-label">Active Customers</span>
+                    <div class="stat-value">{{ total_users }}</div>
+                </div>
+            </div>
+            <div class="col-xl-3 col-md-6" style="--i:4">
+                <div class="stat-card">
+                    <div class="stat-card-icon icon-blue"><i class="bi bi-tag"></i></div>
+                    <span class="stat-label">Brands</span>
+                    <div class="stat-value">{{ total_brands }}</div>
+                    <a href="{% url 'brand_list_url' %}" class="stat-action">Manage Brands →</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== Tab Navigation ===== -->
+        <div class="dash-tabs-wrap">
+            <ul class="dash-tabs" id="adminTabs" role="tablist">
+                <li class="dash-tab-item">
+                    <a class="active" data-bs-toggle="tab" href="#dashboard" role="tab">
+                        <i class="bi bi-speedometer2"></i> Overview
+                    </a>
+                </li>
+                <li class="dash-tab-item">
+                    <a data-bs-toggle="tab" href="#products" role="tab">
+                        <i class="bi bi-box-seam"></i> Products
+                    </a>
+                </li>
+                <li class="dash-tab-item">
+                    <a data-bs-toggle="tab" href="#brands" role="tab">
+                        <i class="bi bi-tags"></i> Brands
+                    </a>
+                </li>
+                <li class="dash-tab-item">
+                    <a data-bs-toggle="tab" href="#categories" role="tab">
+                        <i class="bi bi-list-ul"></i> Categories
+                    </a>
+                </li>
+                <li class="dash-tab-item">
+                    <a data-bs-toggle="tab" href="#users" role="tab">
+                        <i class="bi bi-people"></i> Users
+                    </a>
+                </li>
+            </ul>
+        </div>
+
+        <!-- ===== Tab Content ===== -->
+        <div class="tab-content">
+
+            <!-- OVERVIEW TAB -->
+            <div class="tab-pane fade show active" id="dashboard" role="tabpanel">
+                <div class="section-rule">
+                    <span class="section-rule-label">Critical Alerts</span>
+                    <div class="section-rule-line"></div>
+                </div>
+                <div class="table-panel">
+                    <div class="table-panel-head">
+                        <span class="table-panel-label">Inventory Low Stock</span>
+                        <span style="font-size:0.65rem;color:rgba(255,255,255,0.2);letter-spacing:1px;">{{ low_stock_count }} item{{ low_stock_count|pluralize }} flagged</span>
+                    </div>
+                    <table class="dash-table">
+                        <thead>
+                            <tr>
+                                <th>Product Name</th>
+                                <th>Status</th>
+                                <th>Stock Level</th>
+                                <th class="text-end">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in low_stock_list %}
+                            <tr>
+                                <td class="fw-name">{{ item.name }}</td>
+                                <td><span class="badge-low-stock">Low Stock</span></td>
+                                <td>
+                                    <div class="stock-bar-wrap">
+                                        <div class="stock-bar">
+                                            <div class="stock-bar-fill" style="width: {{ item.stock }}%;"></div>
+                                        </div>
+                                        <span class="stock-units">{{ item.stock }} units</span>
+                                    </div>
+                                </td>
+                                <td class="text-end">
+                                    <a href="{% url 'product_edit_url' item.pk %}" class="btn-dash btn-dash-primary">
+                                        <i class="bi bi-pencil"></i> Update
+                                    </a>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr class="empty-row"><td colspan="4">No low stock items — all good!</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- PRODUCTS TAB -->
+            <div class="tab-pane fade" id="products" role="tabpanel">
+                <a href="{% url 'product_create_url' %}" class="btn-dash btn-dash-add">
+                    <i class="bi bi-plus-lg"></i> Add New Product
+                </a>
+                <div class="table-panel">
+                    <div class="table-panel-head">
+                        <span class="table-panel-label">All Products</span>
+                    </div>
+                    <table class="dash-table">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Name</th>
+                                <th>Category</th>
+                                <th>Brand</th>
+                                <th>Price</th>
+                                <th>Stock</th>
+                                <th class="text-end">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for product in products %}
+                            <tr>
+                                <td style="color:var(--text-muted);font-size:0.78rem;">{{ forloop.counter }}</td>
+                                <td class="fw-name">{{ product.name }}</td>
+                                <td>{{ product.category.name }}</td>
+                                <td>{% if product.brand %}{{ product.brand.name }}{% else %}<span style="color:var(--text-muted)">—</span>{% endif %}</td>
+                                <td style="font-family:'Playfair Display',serif;font-weight:700;">${{ product.price }}</td>
+                                <td>
+                                    {% if product.stock <= 5 %}
+                                        <span class="badge-low-stock">{{ product.stock }}</span>
+                                    {% else %}
+                                        {{ product.stock }}
+                                    {% endif %}
+                                </td>
+                                <td class="text-end">
+                                    <div style="display:inline-flex;gap:6px;flex-wrap:wrap;justify-content:flex-end;">
+                                        <a href="{% url 'product_image_list' product.pk %}" class="btn-dash btn-dash-secondary">
+                                            <i class="bi bi-images"></i>
+                                        </a>
+                                        <a href="{% url 'product_edit_url' product.pk %}" class="btn-dash btn-dash-primary">
+                                            <i class="bi bi-pencil"></i> Edit
+                                        </a>
+                                        <a href="{% url 'product_delete_url' product.pk %}" class="btn-dash btn-dash-danger"
+                                           onclick="return confirm('Delete this product?');">
+                                            <i class="bi bi-trash"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr class="empty-row"><td colspan="7">No products yet.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- BRANDS TAB -->
+            <div class="tab-pane fade" id="brands" role="tabpanel">
+                <a href="{% url 'brand_list_url' %}" class="btn-dash btn-dash-add">
+                    <i class="bi bi-plus-lg"></i> Create Brand
+                </a>
+                <div class="table-panel">
+                    <div class="table-panel-head">
+                        <span class="table-panel-label">All Brands</span>
+                    </div>
+                    <table class="dash-table">
+                        <thead>
+                            <tr>
+                                <th>Logo</th>
+                                <th>Name</th>
+                                <th>Slug</th>
+                                <th class="text-end">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for brand in brands %}
+                            <tr>
+                                <td>
+                                    {% if brand.logo %}
+                                        <img src="{{ brand.logo.url }}" class="brand-logo-thumb" alt="{{ brand.name }}">
+                                    {% else %}
+                                        <div style="width:40px;height:40px;background:var(--cream);border:1px solid var(--cream-deeper);border-radius:3px;display:flex;align-items:center;justify-content:center;color:var(--text-muted);font-size:0.7rem;">—</div>
+                                    {% endif %}
+                                </td>
+                                <td class="fw-name">{{ brand.name }}</td>
+                                <td style="color:var(--text-muted);font-size:0.82rem;">{{ brand.slug }}</td>
+                                <td class="text-end">
+                                    <div style="display:inline-flex;gap:6px;">
+                                        <a href="{% url 'brand_edit_url' brand.pk %}" class="btn-dash btn-dash-primary">
+                                            <i class="bi bi-pencil"></i> Edit
+                                        </a>
+                                        <a href="{% url 'brand_delete_url' brand.pk %}" class="btn-dash btn-dash-danger"
+                                           onclick="return confirm('Delete this brand?');">
+                                            <i class="bi bi-trash"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr class="empty-row"><td colspan="4">No brands yet.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- CATEGORIES TAB -->
+            <div class="tab-pane fade" id="categories" role="tabpanel">
+                <a href="{% url 'category_list_url' %}" class="btn-dash btn-dash-add">
+                    <i class="bi bi-plus-lg"></i> Create Category
+                </a>
+                <div class="table-panel">
+                    <div class="table-panel-head">
+                        <span class="table-panel-label">All Categories</span>
+                    </div>
+                    <table class="dash-table">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Slug</th>
+                                <th>Parent</th>
+                                <th class="text-end">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for category in categories %}
+                            <tr>
+                                <td class="fw-name">{{ category.name }}</td>
+                                <td style="color:var(--text-muted);font-size:0.82rem;">{{ category.slug }}</td>
+                                <td>
+                                    {% if category.parent %}
+                                        {{ category.parent }}
+                                    {% else %}
+                                        <span style="color:var(--text-muted)">—</span>
+                                    {% endif %}
+                                </td>
+                                <td class="text-end">
+                                    <div style="display:inline-flex;gap:6px;">
+                                        <a href="{% url 'category_edit_url' category.pk %}" class="btn-dash btn-dash-primary">
+                                            <i class="bi bi-pencil"></i> Edit
+                                        </a>
+                                        <a href="{% url 'category_delete_url' category.pk %}" class="btn-dash btn-dash-danger"
+                                           onclick="return confirm('Delete this category?');">
+                                            <i class="bi bi-trash"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr class="empty-row"><td colspan="4">No categories yet.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- USERS TAB -->
+            <div class="tab-pane fade" id="users" role="tabpanel">
+                <a href="{% url 'user_create' %}" class="btn-dash btn-dash-add">
+                    <i class="bi bi-person-plus"></i> Create User
+                </a>
+                <div class="table-panel">
+                    <div class="table-panel-head">
+                        <span class="table-panel-label">All Users</span>
+                    </div>
+                    <table class="dash-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Username</th>
+                                <th>Email</th>
+                                <th>Role</th>
+                                <th class="text-end">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for u in users %}
+                            <tr>
+                                <td style="color:var(--text-muted);font-size:0.78rem;">{{ u.id }}</td>
+                                <td class="fw-name">{{ u.username }}</td>
+                                <td style="font-size:0.82rem;">{{ u.email }}</td>
+                                <td>
+                                    <div style="display:flex;gap:5px;flex-wrap:wrap;">
+                                        {% if u.is_superuser %}
+                                            <span class="badge-super">Super</span>
+                                        {% elif u.is_staff %}
+                                            <span class="badge-staff">Staff</span>
+                                        {% else %}
+                                            <span style="font-size:0.75rem;color:var(--text-muted);">Member</span>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                                <td class="text-end">
+                                    <div style="display:inline-flex;gap:6px;align-items:center;">
+                                        <a href="{% url 'user_update' u.pk %}" class="btn-dash btn-dash-primary">
+                                            <i class="bi bi-pencil"></i> Edit
+                                        </a>
+                                        <form method="post" action="{% url 'user_delete' u.pk %}" style="display:inline;margin:0;">
+                                            {% csrf_token %}
+                                            <button type="submit" class="btn-dash btn-dash-danger"
+                                                    onclick="return confirm('Delete this user?');">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr class="empty-row"><td colspan="5">No users found.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<script>
+    // Restore active tab from URL hash
+    document.addEventListener('DOMContentLoaded', function () {
+        const hash = window.location.hash;
+        if (hash) {
+            const trigger = document.querySelector('.dash-tab-item a[href="' + hash + '"]');
+            if (trigger) {
+                // Remove active from all
+                document.querySelectorAll('.dash-tab-item a').forEach(a => a.classList.remove('active'));
+                trigger.classList.add('active');
+                const tab = new bootstrap.Tab(trigger);
+                tab.show();
+            }
+        }
+
+        // Update hash on tab change
+        document.querySelectorAll('.dash-tab-item a').forEach(a => {
+            a.addEventListener('shown.bs.tab', function (e) {
+                history.replaceState(null, null, e.target.getAttribute('href'));
+            });
+        });
+    });
+</script>
+
+{% endblock %}
