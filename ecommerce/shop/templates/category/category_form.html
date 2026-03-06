@@ -380,7 +380,7 @@
             <div class="header-breadcrumb">
                 <a href="{% url 'admin_dashboard' %}">Dashboard</a>
                 <span>/</span>
-                <a href="{% url 'admin_dashboard' %}#categories">Categories</a>
+                <a href="{% url 'admin_dashboard' %}?tab=categories">Categories</a>
                 <span>/</span>
                 <span class="current">{{ title }}</span>
             </div>
@@ -415,7 +415,7 @@
                                 <button type="submit" class="btn-submit">
                                     <i class="bi bi-check-lg"></i> Save Category
                                 </button>
-                                <a href="{% url 'admin_dashboard' %}#categories" class="btn-cancel">
+                                <a href="{% url 'admin_dashboard' %}?tab=categories" class="btn-cancel">
                                     <i class="bi bi-arrow-left"></i> Cancel
                                 </a>
                             </div>
@@ -451,10 +451,7 @@
                     </div>
                     <div class="info-tip">
                         <div class="info-tip-icon"><i class="bi bi-link-45deg"></i></div>
-                        <div class="info-tip-text">
-                            <strong>Slug</strong>
-                            URL-safe identifier. Leave blank to auto-generate from the name. Must be unique.
-                        </div>
+                       
                     </div>
                     <div class="info-tip">
                         <div class="info-tip-icon"><i class="bi bi-diagram-2"></i></div>

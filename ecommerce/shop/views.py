@@ -19,16 +19,22 @@ def _save_cart(request, cart):
 
 def build_cart_items(request):
     cart = _get_cart(request)
+    # Fetch all products in the cart in one single database query
+    products = Product.objects.filter(id__in=cart.keys())
+    
     items = []
     total = 0
-    for pid, qty in cart.items():
-        try:
-            product = Product.objects.get(id=pid)
-        except Product.DoesNotExist:
-            continue
+    
+    for product in products:
+        qty = cart.get(str(product.id))
         subtotal = product.price * qty
-        items.append({'product': product, 'quantity': qty, 'subtotal': subtotal})
+        items.append({
+            'product': product, 
+            'quantity': qty, 
+            'subtotal': subtotal
+        })
         total += subtotal
+        
     return items, total
 
 
@@ -40,7 +46,7 @@ def cart_detail(request):
 
 @login_required
 def cart_add(request, product_id):
-    product = get_object_or_404(Product, id=product_id, is_active=True)
+    product = get_object_or_404(Product, id=product_id)
     cart = _get_cart(request)
     key = str(product_id)
     cart[key] = cart.get(key, 0) + 1
@@ -104,81 +110,18 @@ def order_list(request):
 
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
-from .models import Product, ProductImage
-from .forms import ProductImageForm
+from .models import Product
 
 
-@staff_member_required
-def product_image_list(request, product_id):
-    product = get_object_or_404(Product, id=product_id)
-    images = product.images.all()
-
-    return render(request, 'product_images/image_list.html', {
-        'product': product,
-        'images': images
-    })
 
 
-@staff_member_required
-def product_image_create(request, product_id):
-    product = get_object_or_404(Product, id=product_id)
-
-    if request.method == 'POST':
-        form = ProductImageForm(request.POST, request.FILES)
-        if form.is_valid():
-            image_obj = form.save(commit=False)
-            image_obj.product = product
-
-            # Ensure only one main image
-            if image_obj.is_main:
-                ProductImage.objects.filter(
-                    product=product,
-                    is_main=True
-                ).update(is_main=False)
-
-            image_obj.save()
-            return redirect('product_image_list', product_id=product.id)
-    else:
-        form = ProductImageForm()
-
-    return render(request, 'product_images/image_form.html', {
-        'form': form,
-        'product': product
-    })
-
-@staff_member_required
-def product_image_update(request, pk):
-    image_obj = get_object_or_404(ProductImage, pk=pk)
-    product = image_obj.product
-
-    if request.method == 'POST':
-        form = ProductImageForm(request.POST, request.FILES, instance=image_obj)
-        if form.is_valid():
-
-            if form.cleaned_data.get('is_main'):
-                ProductImage.objects.filter(
-                    product=product,
-                    is_main=True
-                ).exclude(id=image_obj.id).update(is_main=False)
-
-            form.save()
-            return redirect('product_image_list', product_id=product.id)
-    else:
-        form = ProductImageForm(instance=image_obj)
-
-    return render(request, 'product_images/image_form.html', {
-        'form': form,
-        'product': product
-    })
 
 
-@staff_member_required
-def product_image_delete(request, pk):
-    image_obj = get_object_or_404(ProductImage, pk=pk)
-    product_id = image_obj.product.id
 
-    image_obj.delete()
-    return redirect('product_image_list', product_id=product_id)
+
+
+
+
 
 
 
@@ -240,9 +183,7 @@ def category_list_create(request):
         form = CategoryForm(request.POST)
         if form.is_valid():
             form.save()
-            # return to dashboard brands tab
-            from django.urls import reverse
-            return redirect(reverse('admin_dashboard') + '#categories')
+            return redirect('admin_dashboard')
     else:
         form = CategoryForm()
 
@@ -259,8 +200,7 @@ def category_edit(request, pk):
         form = CategoryForm(request.POST, instance=category)
         if form.is_valid():
             form.save()
-            from django.urls import reverse
-            return redirect(reverse('admin_dashboard') + '#categories')
+            return redirect('admin_dashboard')
     else:
         form = CategoryForm(instance=category)
 
@@ -273,8 +213,7 @@ def category_edit(request, pk):
 def category_delete(request, pk):
     category = get_object_or_404(Category, pk=pk)
     category.delete()
-    from django.urls import reverse
-    return redirect(reverse('admin_dashboard') + '#categories')
+    return redirect('admin_dashboard')
 
 # BRAND CRUD
 
@@ -286,8 +225,8 @@ def brand_list_create(request):
         form = BrandForm(request.POST, request.FILES)
         if form.is_valid():
             form.save()
-            from django.urls import reverse
-            return redirect(reverse('admin_dashboard') + '#brands')
+            
+            return redirect('admin_dashboard')
     else:
         form = BrandForm()
 
@@ -304,8 +243,7 @@ def brand_edit(request, pk):
         form = BrandForm(request.POST, request.FILES, instance=brand)
         if form.is_valid():
             form.save()
-            from django.urls import reverse
-            return redirect(reverse('admin_dashboard') + '#brands')
+            return redirect('admin_dashboard')
     else:
         form = BrandForm(instance=brand)
 
@@ -317,9 +255,7 @@ def brand_edit(request, pk):
 def brand_delete(request, pk):
     brand = get_object_or_404(Brand, pk=pk)
     brand.delete()
-    from django.urls import reverse
-    return redirect(reverse('admin_dashboard') + '#brands')
-
+    return redirect('admin_dashboard')
 def product_list(request):
     products = Product.objects.filter(is_active=True)
     # render customer-facing product list (includes add-to-cart button)
@@ -332,8 +268,7 @@ def product_create(request):
         form = ProductForm(request.POST, request.FILES)
         if form.is_valid():
             form.save()
-            from django.urls import reverse
-            return redirect(reverse('admin_dashboard') + '#products')
+            return redirect('admin_dashboard')
     else:
         form = ProductForm()
 
@@ -348,8 +283,7 @@ def product_edit(request, pk):
         form = ProductForm(request.POST, request.FILES, instance=product)
         if form.is_valid():
             form.save()
-            from django.urls import reverse
-            return redirect(reverse('admin_dashboard') + '#products')
+            return redirect('admin_dashboard')
     else:
         form = ProductForm(instance=product)
 
@@ -361,8 +295,8 @@ def product_delete(request, pk):
     product = get_object_or_404(Product, pk=pk)
     product.is_active = False
     product.save()
-    from django.urls import reverse
-    return redirect(reverse('admin_dashboard') + '#products')
+    
+    return redirect('admin_dashboard')
 
 
 

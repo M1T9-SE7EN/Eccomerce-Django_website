@@ -531,7 +531,7 @@
       <div class="header-breadcrumb">
         <a href="{% url 'admin_dashboard' %}">Dashboard</a>
         <span>/</span>
-        <a href="{% url 'admin_dashboard' %}#products">Products</a>
+        <a href="{% url 'admin_dashboard' %}?tab=products">Products</a>
         <span>/</span>
         <span class="current"
           >{% if form.instance.pk %}{{ form.instance.name|truncatechars:30 }}{%
@@ -566,10 +566,7 @@
                   <label class="field-label" for="id_name">Product Name</label>
                   {{ form.name }}
                 </div>
-                <div class="col-md-4">
-                  <label class="field-label" for="id_slug">Slug</label>
-                  {{ form.slug }}
-                </div>
+               
               </div>
 
               <div class="form-divider mt-4">
@@ -668,7 +665,7 @@
               <i class="bi bi-check-lg"></i> Update Product {% else %}
               <i class="bi bi-plus-lg"></i> Create Product {% endif %}
             </button>
-            <a href="{% url 'admin_dashboard' %}#products" class="btn-cancel">
+            <a href="{% url 'admin_dashboard' %}?tab=products" class="btn-cancel">
               <i class="bi bi-arrow-left"></i> Cancel
             </a>
           </div>

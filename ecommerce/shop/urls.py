@@ -28,9 +28,6 @@ urlpatterns = [
     path('dashboard/products/edit/<int:pk>/', views.product_edit, name='product_edit_url'),
     path('dashboard/products/delete/<int:pk>/', views.product_delete, name='product_delete_url'),
 
-    path('product/<int:product_id>/images/', views.product_image_list, name='product_image_list'),
-    path('product/<int:product_id>/images/add/', views.product_image_create, name='product_image_create'),
-    path('images/<int:pk>/edit/', views.product_image_update, name='product_image_update'),
-    path('images/<int:pk>/delete/', views.product_image_delete, name='product_image_delete'),
+
 ]
 

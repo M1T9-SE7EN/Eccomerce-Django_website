@@ -662,7 +662,6 @@
                             <tr>
                                 <th>Logo</th>
                                 <th>Name</th>
-                                <th>Slug</th>
                                 <th class="text-end">Actions</th>
                             </tr>
                         </thead>
@@ -677,7 +676,7 @@
                                     {% endif %}
                                 </td>
                                 <td class="fw-name">{{ brand.name }}</td>
-                                <td style="color:var(--text-muted);font-size:0.82rem;">{{ brand.slug }}</td>
+                         
                                 <td class="text-end">
                                     <div style="display:inline-flex;gap:6px;">
                                         <a href="{% url 'brand_edit_url' brand.pk %}" class="btn-dash btn-dash-primary">
@@ -711,7 +710,6 @@
                         <thead>
                             <tr>
                                 <th>Name</th>
-                                <th>Slug</th>
                                 <th>Parent</th>
                                 <th class="text-end">Actions</th>
                             </tr>
@@ -720,7 +718,7 @@
                             {% for category in categories %}
                             <tr>
                                 <td class="fw-name">{{ category.name }}</td>
-                                <td style="color:var(--text-muted);font-size:0.82rem;">{{ category.slug }}</td>
+                            
                                 <td>
                                     {% if category.parent %}
                                         {{ category.parent }}
@@ -812,9 +810,15 @@
 </div>
 
 <script>
-    // Restore active tab from URL hash
+    // Restore active tab from URL hash or query parameter
     document.addEventListener('DOMContentLoaded', function () {
-        const hash = window.location.hash;
+        // prefer ?tab= over hash for reliability
+        const params = new URLSearchParams(window.location.search);
+        let target = null;
+        if (params.has('tab')) {
+            target = '#' + params.get('tab');
+        }
+        const hash = target || window.location.hash;
         if (hash) {
             const trigger = document.querySelector('.dash-tab-item a[href="' + hash + '"]');
             if (trigger) {
@@ -826,10 +830,11 @@
             }
         }
 
-        // Update hash on tab change
+        // Update hash on tab change (also clear query param)
         document.querySelectorAll('.dash-tab-item a').forEach(a => {
             a.addEventListener('shown.bs.tab', function (e) {
-                history.replaceState(null, null, e.target.getAttribute('href'));
+                const href = e.target.getAttribute('href');
+                history.replaceState(null, null, href);
             });
         });
     });

@@ -487,8 +487,6 @@
                         <thead>
                             <tr>
                                 <th>Name</th>
-                                <th>URL Slug</th>
-                                <th>Parent</th>
                                 <th class="text-end">Actions</th>
                             </tr>
                         </thead>
@@ -496,8 +494,7 @@
                             {% for category in categories %}
                             <tr>
                                 <td class="td-name">{{ category.name }}</td>
-                                <td><span class="td-slug">/{{ category.slug }}</span></td>
-                                <td>
+                              
                                     {% if category.parent %}
                                         <span class="parent-badge">{{ category.parent }}</span>
                                     {% else %}
