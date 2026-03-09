@@ -115,16 +115,6 @@ from .models import Product
 
 
 
-
-
-
-
-
-
-
-
-
-
 @staff_member_required
 def admin_dashboard(request):
     # Gathering some sample metrics
@@ -303,67 +293,3 @@ def product_delete(request, pk):
 
 
 
-
-
-
-
-
-# def product_list(request):
-#     products = Product.objects.filter(available=True)
-#     return render(request, 'shop/product_list.html', {'products': products})
-
-
-# @staff_member_required
-# def category_create(request):
-#     if request.method == "POST":
-#         form = CategoryForm(request.POST)
-#         if form.is_valid():
-#             form.save()
-#             messages.success(request, "Category created successfully.")
-#             return redirect('category_list')
-#     else:
-#         form = CategoryForm()
-
-#     return render(request, 'Category/category_form.html', {
-#         'form': form,
-#         'title': 'Create Category'
-#     })
-
-# @staff_member_required
-# def category_list(request):
-#     categories = Category.objects.all()
-#     return render(request, 'Category/category_list.html', {
-#         'categories': categories
-#     })
-
-# @staff_member_required
-# def category_update(request, pk):
-#     category = get_object_or_404(Category, pk=pk)
-
-#     if request.method == "POST":
-#         form = CategoryForm(request.POST, instance=category)
-#         if form.is_valid():
-#             form.save()
-#             messages.success(request, "Category updated successfully.")
-#             return redirect('category_list')
-#     else:
-#         form = CategoryForm(instance=category)
-
-#     return render(request, 'Category/category_form.html', {
-#         'form': form,
-#         'title': 'Update Category'
-#     })
-
-
-# @staff_member_required
-# def category_delete(request, pk):
-#     category = get_object_or_404(Category, pk=pk)
-
-#     if request.method == "POST":
-#         category.delete()
-#         messages.success(request, "Category deleted successfully.")
-#         return redirect('category_list')
-
-#     return render(request, 'Category/category_confirm_delete.html', {
-#         'category': category
-#     })

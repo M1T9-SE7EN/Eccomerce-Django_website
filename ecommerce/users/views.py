@@ -79,7 +79,7 @@ def user_create(request):
             form.save()
             messages.success(request, "User created successfully")
             from django.urls import reverse
-            return redirect(reverse('admin_dashboard') + '#users')
+            return redirect('admin_dashboard')
     else:
         form = AdminUserCreateForm()
 
@@ -111,6 +111,6 @@ def user_delete(request, pk):
     if request.method == 'POST':
         user.delete()
         messages.success(request, "User deleted successfully")
-        return redirect(reverse('admin_dashboard') + '#users')
+        return redirect('admin_dashboard')
 
     return render(request, 'user_confirm_delete.html', {'user': user})
